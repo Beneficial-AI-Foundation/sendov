@@ -415,6 +415,108 @@ theorem wsum_eq_of_packed (g₀ g₁ g₂ : List ℤ) (k : ℕ) (L β τ : ℤ) 
   rw [rowZ_qrow_eq g₀ g₁ g₂ k β τ hτ hbτ, ← pevZ_wsum] at hcheck
   exact pevZ_inj β hβ _ _ hbN hbW hlen hcheck.symm
 
+/-! ### Entry lengths
+
+`qrow_length` counts the entries of a row; bounding the α-packed values also needs each
+entry's *length*.  Multiplying by a `g` of length at most `G` lengthens an entry by at most
+`G`, so after `k` steps an entry has length at most `1 + G*k`.  This is what lets the
+hypotheses of `wsum_eq_of_packed` be discharged by arithmetic instead of by computing
+`qrow`. -/
+
+lemma pmul_length_le (p q : List ℤ) : (pmul p q).length ≤ p.length + q.length := by
+  induction p with
+  | nil => simp [pmul]
+  | cons a p ih =>
+    simp only [pmul, padd_length, List.length_map, List.length_cons]
+    omega
+
+lemma mem_radd_length_le {m : ℕ} : ∀ (r s : List (List ℤ)),
+    (∀ p ∈ r, p.length ≤ m) → (∀ q ∈ s, q.length ≤ m) →
+    ∀ x ∈ radd r s, x.length ≤ m := by
+  intro r
+  induction r with
+  | nil => intro s _ hs x hx; exact hs x (by simpa [radd] using hx)
+  | cons p r ih =>
+    intro s hr hs x hx
+    cases s with
+    | nil => exact hr x (by simpa [radd] using hx)
+    | cons q s =>
+      rcases List.mem_cons.1 (by simpa [radd] using hx) with h | h
+      · subst h
+        have := hr p (List.mem_cons_self ..)
+        have := hs q (List.mem_cons_self ..)
+        rw [padd_length]
+        omega
+      · exact ih s (fun y hy => hr y (List.mem_cons_of_mem _ hy))
+          (fun y hy => hs y (List.mem_cons_of_mem _ hy)) x h
+
+lemma mem_rscale_length_le {m : ℕ} (g : List ℤ) (r : List (List ℤ))
+    (hr : ∀ p ∈ r, p.length ≤ m) : ∀ x ∈ rscale g r, x.length ≤ g.length + m := by
+  intro x hx
+  simp only [rscale, List.mem_map] at hx
+  obtain ⟨p, hp, rfl⟩ := hx
+  have := pmul_length_le g p
+  have := hr p hp
+  omega
+
+/-- Each entry of the `k`-th row has length at most `1 + G*k`, where `G` bounds the lengths
+of the multipliers. -/
+theorem qrow_entry_length_le (g₀ g₁ g₂ : List ℤ) (G : ℕ)
+    (h0 : g₀.length ≤ G) (h1 : g₁.length ≤ G) (h2 : g₂.length ≤ G) :
+    ∀ (k : ℕ), ∀ p ∈ qrow g₀ g₁ g₂ k, p.length ≤ 1 + G * k := by
+  intro k
+  induction k with
+  | zero =>
+    intro p hp
+    simp only [qrow, List.mem_singleton] at hp
+    subst hp
+    simp
+  | succ k ih =>
+    intro p hp
+    have hGk : G * (k + 1) = G * k + G := by ring
+    have hb : ∀ q ∈ qrow g₀ g₁ g₂ k, q.length ≤ 1 + G * k := ih
+    have e0 : ∀ x ∈ rscale g₀ (qrow g₀ g₁ g₂ k), x.length ≤ 1 + G * (k + 1) := by
+      intro x hx; have := mem_rscale_length_le g₀ _ hb x hx; omega
+    have e1 : ∀ x ∈ ([] : List ℤ) :: rscale g₁ (qrow g₀ g₁ g₂ k),
+        x.length ≤ 1 + G * (k + 1) := by
+      intro x hx
+      rcases List.mem_cons.1 hx with h | h
+      · subst h; simp
+      · have := mem_rscale_length_le g₁ _ hb x h; omega
+    have e2 : ∀ x ∈ ([] : List ℤ) :: ([] : List ℤ) :: rscale g₂ (qrow g₀ g₁ g₂ k),
+        x.length ≤ 1 + G * (k + 1) := by
+      intro x hx
+      rcases List.mem_cons.1 hx with h | h
+      · subst h; simp
+      rcases List.mem_cons.1 h with h' | h'
+      · subst h'; simp
+      · have := mem_rscale_length_le g₂ _ hb x h'; omega
+    exact mem_radd_length_le _ _ e0 (mem_radd_length_le _ _ e1 e2) p hp
+
+/-- `l1` of an entry is at most `l1row` of the row. -/
+lemma l1_le_l1row : ∀ (r : List (List ℤ)) (p : List ℤ), p ∈ r → l1 p ≤ l1row r := by
+  intro r
+  induction r with
+  | nil => intro p hp; cases hp
+  | cons q r ih =>
+    intro p hp
+    rcases List.mem_cons.1 hp with h | h
+    · subst h; have := l1row_nonneg r; simp only [l1row_cons]; omega
+    · have := ih p h; have := l1_nonneg q; simp only [l1row_cons]; omega
+
+/-- The weighted sum is no longer than the entries it combines. -/
+lemma wsum_length_le {m : ℕ} (L : ℤ) : ∀ (r : List (List ℤ)) (i : ℕ),
+    (∀ p ∈ r, p.length ≤ m) → (wsum L i r).length ≤ m := by
+  intro r
+  induction r with
+  | nil => intro i _; simp
+  | cons p r ih =>
+    intro i hr
+    have hp := hr p (List.mem_cons_self ..)
+    have := ih (i + 1) (fun q hq => hr q (List.mem_cons_of_mem _ hq))
+    simp only [wsum_cons, padd_length, List.length_map]
+    omega
+
 /-- **The moment from a verified numerator.**  Combining `Sendov.integral_moment_of` with
 `Sendov.pev_wsum`, the integral is an explicit integer polynomial over an explicit
 denominator.  Everything on the right is either supplied by the generator or a kernel

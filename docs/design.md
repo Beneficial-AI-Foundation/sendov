@@ -55,11 +55,14 @@ still succeed — a fact that matters repeatedly below.
 Degree 20 has now been reproduced through the packed path and cross-checked against the
 multinomial route (`packed_agrees_twenty`), so the bridge is validated end to end.
 
-Open: degrees 9–97, and the analytic `n ≥ 98` argument beyond its Beta core.  For large `k`
-the bounds `hbτ`, `hbW`, `hlen` of `wsum_eq_of_packed` are currently discharged by `decide`,
-which computes `qrow`; above `k ≈ 20` they must instead be derived from `l1row_qrow` plus an
-entry-length bound (the row has `2k+1` entries by `qrow_length`, but a bound on each entry's
-*degree* is still needed).
+Open: degrees 9–97, and the analytic `n ≥ 98` argument beyond its Beta core.
+
+The hypotheses of `wsum_eq_of_packed` are now all derivable by arithmetic rather than by
+computing `qrow`: coefficient size from `l1row_qrow`, entry length from
+`qrow_entry_length_le` (an entry of the `k`-th row has length at most `1 + G*k`, where `G`
+bounds the multipliers' lengths), row length from `qrow_length`, and packed magnitude from
+`abs_pevZ_le`.  `Degree20Packed.lean` still discharges them with `decide` — affordable at
+`k = 8` — but a large-`k` degree file can use the lemmas instead.
 
 ---
 
