@@ -255,9 +255,107 @@ theorem l1row_qrow (g₀ g₁ g₂ : List ℤ) (k : ℕ) :
           exact mul_le_mul_of_nonneg_left ih hg
       _ = (l1 g₀ + l1 g₁ + l1 g₂) ^ (k + 1) := by ring
 
+/-! ### Lengths, and the magnitude of a packed value -/
+
+lemma padd_length (p q : List ℤ) : (padd p q).length = max p.length q.length := by
+  induction p generalizing q with
+  | nil => simp [padd]
+  | cons a p ih =>
+    cases q with
+    | nil => simp [padd]
+    | cons c q => simp [padd, ih]
+
+lemma radd_length (r s : List (List ℤ)) :
+    (radd r s).length = max r.length s.length := by
+  induction r generalizing s with
+  | nil => simp [radd]
+  | cons p r ih =>
+    cases s with
+    | nil => simp [radd]
+    | cons q s => simp [radd, ih]
+
+@[simp] lemma rscale_length (g : List ℤ) (r : List (List ℤ)) :
+    (rscale g r).length = r.length := by
+  simp [rscale]
+
+/-- The row of the `k`-th power has `2k+1` entries, whatever the multiplier. -/
+@[simp] lemma qrow_length (g₀ g₁ g₂ : List ℤ) (k : ℕ) :
+    (qrow g₀ g₁ g₂ k).length = 2 * k + 1 := by
+  induction k with
+  | zero => simp [qrow]
+  | succ k ih =>
+    simp only [qrow, qstep, radd_length, rscale_length, List.length_cons, ih]
+    omega
+
+/-- A packed value is bounded by the `L¹` norm times a power of the base. -/
+lemma abs_pevZ_le (b : ℤ) (hb : 1 ≤ b) :
+    ∀ p : List ℤ, |pevZ p b| ≤ l1 p * b ^ p.length := by
+  intro p
+  induction p with
+  | nil => simp
+  | cons a p ih =>
+    have hb0 : (0 : ℤ) < b := by omega
+    have hpow : (1 : ℤ) ≤ b ^ p.length := one_le_pow₀ hb
+    have hl1 := l1_nonneg p
+    have habs := abs_nonneg a
+    calc |pevZ (a :: p) b| = |a + b * pevZ p b| := rfl
+      _ ≤ |a| + |b * pevZ p b| := abs_add_le _ _
+      _ = |a| + b * |pevZ p b| := by rw [abs_mul, abs_of_pos hb0]
+      _ ≤ |a| + b * (l1 p * b ^ p.length) := by nlinarith [ih]
+      _ ≤ (|a| + l1 p) * b ^ (p.length + 1) := by
+            have hbb : (1 : ℤ) ≤ b * b ^ p.length := by nlinarith [hpow, hb0]
+            have hkey := mul_le_mul_of_nonneg_left hbb habs
+            ring_nf
+            nlinarith [hkey, hpow, hl1, hb0]
+      _ = l1 (a :: p) * b ^ (a :: p).length := by simp [l1_cons]
+
 /-! ### The verification step
 
-The generator supplies the moment numerator; Lean checks it with one integer comparison. -/
+The generator supplies the moment numerator; Lean checks it with one integer comparison.
+Lengths need not match exactly: a shorter list is compared against its zero-padding, which
+has the same value as a polynomial. -/
+
+/-- Evaluation ignores trailing zeros. -/
+lemma pev_append_zeros (p : List ℤ) (j : ℕ) (α : ℝ) :
+    pev (p ++ List.replicate j 0) α = pev p α := by
+  induction p with
+  | nil =>
+    induction j with
+    | zero => simp [pev]
+    | succ j ih => simp only [List.replicate_succ, List.nil_append, pev] at *; simp [ih]
+  | cons a p ih => simp only [List.cons_append, pev, ih]
+
+/-- The round trip, tolerating extra room: unpacking to length `m ≥ p.length` returns `p`
+zero-padded. -/
+theorem unpackZ_pevZ_le (β : ℤ) (hβ : 0 < β) :
+    ∀ (m : ℕ) (p : List ℤ), p.length ≤ m → (∀ a ∈ p, 2 * |a| < β) →
+      unpackZ β m (pevZ p β) = p ++ List.replicate (m - p.length) 0 := by
+  intro m
+  induction m with
+  | zero =>
+    intro p hlen _
+    simp [List.length_eq_zero_iff.1 (Nat.le_zero.1 hlen)]
+  | succ m ih =>
+    intro p hlen hb
+    cases p with
+    | nil =>
+      have h0 : bdig β 0 = 0 := by
+        have : (0 : ℤ) % β = 0 := Int.zero_emod β
+        simp only [bdig, this]
+        split_ifs <;> omega
+      simp only [pevZ_nil, unpackZ_succ, h0, List.nil_append, List.length_nil,
+        Nat.sub_zero, List.replicate_succ]
+      have := ih [] (Nat.zero_le m) (by simp)
+      simpa using this
+    | cons a p =>
+      have ha : 2 * |a| < β := hb a (List.mem_cons_self ..)
+      have hp : ∀ x ∈ p, 2 * |x| < β := fun x hx => hb x (List.mem_cons_of_mem _ hx)
+      have hd : bdig β (a + β * pevZ p β) = a := bdig_add_mul β a _ hβ ha
+      have hq : (a + β * pevZ p β - a) / β = pevZ p β := by
+        rw [add_sub_cancel_left, Int.mul_ediv_cancel_left _ hβ.ne']
+      simp only [pevZ_cons, unpackZ_succ, hd, hq, List.length_cons]
+      rw [ih p (by simpa using Nat.le_of_succ_le_succ hlen) hp]
+      simp
 
 /-- The weighted sum computed directly on the α-packed row. -/
 def wsumZ (L : ℤ) : ℕ → List ℤ → ℤ
