@@ -108,6 +108,12 @@ Batch sizes track the slack: 2–3 through the tight middle around the `n = 53` 
 precisely because `R n α` falls away from the peak, so they drop to 22% of the batched total.
 21–26 batches cover `6 ≤ n ≤ 97` depending on how much margin is left.
 
+Batches cannot be made arbitrarily large: the bound degrades as `pref_{n₁}/pref_{n₀}` grows
+like `(n₁/n₀)³`, which the shrinking moment does not offset.  Ending at 97, the bound is
+`0.66` for `[82,97]`, `0.91` for `[78,97]`, `1.95` for `[70,97]` and `4.78` for `[62,97]`.
+So about 20 degrees is the ceiling at the top of the range; `[78,97]` is the largest batch
+admitting a certificate, at degree 76.
+
 **The plan must be driven by certificate feasibility, not by the numeric bound.**  These do
 not track each other: `[34,36]` at bound `0.9348` admits no single all-positive Bernstein
 certificate, while `[52,53]` at `0.9475` does.  So the generator should attempt a batch,
