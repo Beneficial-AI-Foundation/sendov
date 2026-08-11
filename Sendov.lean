@@ -16,5 +16,6 @@ import Sendov.FiniteRange.Degree20Packed
 import Sendov.FiniteRange.Degree53Packed
 import Sendov.FiniteRange.Degree97Packed
 import Sendov.FiniteRange.Degree7897
+import Sendov.FiniteRange.Degree80_100
 import Sendov.LargeDegree.Beta
 import Sendov.LargeDegree.Tail
