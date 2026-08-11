@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Terence Tao
 -/
 import Sendov.FiniteRange.Basic
-import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import Sendov.FiniteRange.Moments
 
 /-!
 # The finite-range claim in degree six
@@ -50,21 +50,12 @@ lemma integral_six (α : ℝ) :
     (∫ t in (0 : ℝ)..1, t ^ 3 * Q 6 α t ^ ((((6 : ℕ) : ℝ) - 4) / 2))
       = 1 / 4 - 2 * c 6 α / 5 + A 6 α / 6 := by
   have hfun : (fun t : ℝ => t ^ 3 * Q 6 α t ^ ((((6 : ℕ) : ℝ) - 4) / 2))
-      = fun t : ℝ => t ^ 3 - 2 * c 6 α * t ^ 4 + A 6 α * t ^ 5 := by
+      = fun t : ℝ => 1 * t ^ 3 + (-2 * c 6 α) * t ^ 4 + A 6 α * t ^ 5 + 0 * t ^ 6
+          + 0 * t ^ 7 := by
     funext t
     rw [show ((((6 : ℕ) : ℝ) - 4) / 2) = 1 by norm_num, Real.rpow_one, Q]
     ring
-  rw [hfun]
-  have h1 : IntervalIntegrable (fun t : ℝ => t ^ 3) volume 0 1 :=
-    (by fun_prop : Continuous fun t : ℝ => t ^ 3).intervalIntegrable _ _
-  have h2 : IntervalIntegrable (fun t : ℝ => 2 * c 6 α * t ^ 4) volume 0 1 :=
-    (by fun_prop : Continuous fun t : ℝ => 2 * c 6 α * t ^ 4).intervalIntegrable _ _
-  have h3 : IntervalIntegrable (fun t : ℝ => A 6 α * t ^ 5) volume 0 1 :=
-    (by fun_prop : Continuous fun t : ℝ => A 6 α * t ^ 5).intervalIntegrable _ _
-  rw [intervalIntegral.integral_add (h1.sub h2) h3, intervalIntegral.integral_sub h1 h2,
-    intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
-    integral_pow, integral_pow, integral_pow]
-  norm_num
+  rw [hfun, integral_poly7]
   ring
 
 /-- The cleared form of `1 - R 6 α`: the numerator is the quartic `P` and the denominator is

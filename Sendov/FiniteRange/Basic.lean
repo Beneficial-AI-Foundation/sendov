@@ -71,4 +71,22 @@ lemma Q_le_one (hn : 2 ≤ n) (hα : 0 ≤ α) (hfeas : c n α ^ 2 ≤ A n α)
   simp only [Q]
   nlinarith [mul_nonneg ht0 (neg_nonneg.2 h5)]
 
+/-- The coefficient multiplying the integral in `Sendov.R` is nonnegative, so any upper
+bound for the integral yields an upper bound for `R`.  This is how each degree replaces its
+integral by an explicit rational function. -/
+lemma R_le_of_integral_le (hn : 2 ≤ n) (hα : 0 ≤ α) {J : ℝ}
+    (hJ : (∫ t in (0 : ℝ)..1, t ^ 3 * Q n α t ^ (((n : ℝ) - 4) / 2)) ≤ J) :
+    R n α ≤ 1 / 6 + 1 / (4 * (3 + α)) + 1 / (2 * M n) + 1 / (4 * M n * (3 + α)) +
+      A n α ^ 2 * n * M n * ((n : ℝ) - 2) / (4 * (3 + α)) * J := by
+  have h3 : (0 : ℝ) < 3 + α := three_add_pos hα
+  have hn2 : (0 : ℝ) ≤ (n : ℝ) - 2 := by
+    have : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+    linarith
+  have hcoef : 0 ≤ A n α ^ 2 * n * M n * ((n : ℝ) - 2) / (4 * (3 + α)) :=
+    div_nonneg (mul_nonneg (mul_nonneg (mul_nonneg (sq_nonneg _) (Nat.cast_nonneg n))
+      (M_pos hn).le) hn2) (by linarith)
+  rw [R]
+  have := mul_le_mul_of_nonneg_left hJ hcoef
+  linarith
+
 end Sendov
