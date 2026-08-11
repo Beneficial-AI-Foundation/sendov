@@ -415,6 +415,29 @@ theorem wsum_eq_of_packed (g₀ g₁ g₂ : List ℤ) (k : ℕ) (L β τ : ℤ) 
   rw [rowZ_qrow_eq g₀ g₁ g₂ k β τ hτ hbτ, ← pevZ_wsum] at hcheck
   exact pevZ_inj β hβ _ _ hbN hbW hlen hcheck.symm
 
+/-- **The moment from a verified numerator.**  Combining `Sendov.integral_moment_of` with
+`Sendov.pev_wsum`, the integral is an explicit integer polynomial over an explicit
+denominator.  Everything on the right is either supplied by the generator or a kernel
+computation on integers. -/
+theorem integral_moment_packed (n k : ℕ) (hn : 2 ≤ n) (α : ℝ) (hα : 0 ≤ α)
+    (L : ℤ) (hL : 0 < L) (Nmom : List ℤ)
+    (hdvd : ∀ j, j < 2 * k + 1 → ((0 : ℕ) + j + 4 : ℤ) ∣ L)
+    (hNmom : Nmom = wsum L 0 (qrow (gg0 n) (gg1 n) (gg2 n) k)) :
+    (∫ t in (0 : ℝ)..1, t ^ 3 * Q n α t ^ k)
+      = pev Nmom α / ((L : ℝ) * (2 * M n * (3 + α)) ^ k) := by
+  have hM : 0 < M n := M_pos hn
+  have h3 : (0 : ℝ) < 3 + α := three_add_pos hα
+  have hD : (0 : ℝ) < 2 * M n * (3 + α) := by positivity
+  have hLR : (0 : ℝ) < (L : ℝ) := by exact_mod_cast hL
+  have hdvd' : ∀ j, j < (qrow (gg0 n) (gg1 n) (gg2 n) k).length →
+      ((0 : ℕ) + j + 4 : ℤ) ∣ L := by
+    intro j hj
+    rw [qrow_length] at hj
+    exact hdvd j hj
+  have hw := pev_wsum L (qrow (gg0 n) (gg1 n) (gg2 n) k) 0 α hdvd'
+  rw [integral_moment_of n k hn α hα, hNmom, hw]
+  field_simp
+
 /-- Every coefficient of every entry of a row is bounded by the row's `L¹` norm. -/
 lemma abs_le_l1row : ∀ (r : List (List ℤ)) (p : List ℤ), p ∈ r → ∀ a ∈ p, |a| ≤ l1row r := by
   intro r

@@ -48,11 +48,18 @@ still succeed — a fact that matters repeatedly below.
 | Moment recurrence | `FiniteRange/Recurrence.lean` | proved; too slow to use (§4) |
 | Kronecker packing core | `FiniteRange/Pack.lean` | proved |
 | Packing bridge | `FiniteRange/PackBridge.lean` | proved |
+| Degree 20 via packing | `FiniteRange/Degree20Packed.lean` | proved, cross-checked |
 | Beta integral (n ≥ 98) | `LargeDegree/Beta.lean` | proved |
 | Certificate generator | `scripts/gen_degree.py` | untrusted, self-checking |
 
-Open: the packing bridge (§7), degrees 9–97, and the analytic `n ≥ 98` argument beyond its
-Beta core.
+Degree 20 has now been reproduced through the packed path and cross-checked against the
+multinomial route (`packed_agrees_twenty`), so the bridge is validated end to end.
+
+Open: degrees 9–97, and the analytic `n ≥ 98` argument beyond its Beta core.  For large `k`
+the bounds `hbτ`, `hbW`, `hlen` of `wsum_eq_of_packed` are currently discharged by `decide`,
+which computes `qrow`; above `k ≈ 20` they must instead be derived from `l1row_qrow` plus an
+entry-length bound (the row has `2k+1` entries by `qrow_length`, but a bound on each entry's
+*degree* is still needed).
 
 ---
 
