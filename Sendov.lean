@@ -8,3 +8,4 @@ import Sendov.FiniteRange.Degree6
 import Sendov.FiniteRange.Degree7
 import Sendov.FiniteRange.Degree8
 import Sendov.FiniteRange.Degree20
+import Sendov.LargeDegree.Beta
