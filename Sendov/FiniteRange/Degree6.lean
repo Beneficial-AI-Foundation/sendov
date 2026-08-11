@@ -18,13 +18,12 @@ Concretely, with `M 6 = 5`, `A 6 α = 1 - 2α/5` and `c 6 α = (30 - α - 2α²)
 * `∫ t in 0..1, t³ Q(t) dt = 1/4 - 2c/5 + A/6` (`Sendov.integral_six`);
 * `1 - R 6 α = P α / (375 (3+α)²)` with
   `P α = -24α⁴ - 342α³ + 2345α² - 900α + 1575` (`Sendov.one_sub_R_six`);
-* the feasibility constraint `c ^ 2 ≤ A` is equivalent to `G α ≥ 0` with
-  `G α = -4α⁴ - 44α³ - 21α² + 300α` (`Sendov.feasible_six`).
+* feasibility enters only through `Sendov.alpha_le_half_M`, which gives `α ≤ 5/2`.
 
-`G` is nonnegative on `[0, 2.194]` and `P` is positive up to `α = 4.856`, so there is ample
-room: feasibility is used only through the crude consequence `α ≤ 3`.  Note that the
-hypothesis `α ≤ 17` of `Sendov.finite_range` is not needed in this degree, since
-feasibility already bounds `α`.
+`P` is positive up to `α = 4.856`, so there is ample room.  The exact feasible range is
+`α ≤ 2.194`, cut out by the quartic `-4α⁴ - 44α³ - 21α² + 300α ≥ 0`, but that finer
+information is not needed.  Note also that the hypothesis `α ≤ 17` of
+`Sendov.finite_range` is unused in this degree, since feasibility already bounds `α`.
 -/
 
 namespace Sendov
@@ -69,25 +68,13 @@ lemma one_sub_R_six (hα : 0 ≤ α) :
   field_simp
   ring
 
-/-- The cleared form of the feasibility constraint in degree six. -/
-lemma feasible_six (hα : 0 ≤ α) (hfeas : c 6 α ^ 2 ≤ A 6 α) :
-    0 ≤ -4 * α ^ 4 - 44 * α ^ 3 - 21 * α ^ 2 + 300 * α := by
-  have h3 : (0 : ℝ) < 3 + α := three_add_pos hα
-  rw [c_six' hα, A_six, div_pow, div_le_iff₀ (by positivity)] at hfeas
-  nlinarith [hfeas]
-
-/-- Feasibility in degree six forces `α ≤ 3` (in fact `α ≤ 2.194…`). -/
-lemma alpha_le_three_six (hα : 0 ≤ α) (hfeas : c 6 α ^ 2 ≤ A 6 α) : α ≤ 3 := by
-  have hG := feasible_six hα hfeas
-  by_contra hgt
-  rw [not_le] at hgt
-  nlinarith [hG, hgt, hα, sq_nonneg (α - 3), mul_pos (lt_of_lt_of_le (by norm_num) hgt.le)
-    (sub_pos.2 hgt)]
-
 /-- **The finite-range claim in degree six.**  Note that no upper bound on `α` is assumed:
 the feasibility constraint supplies one. -/
 theorem finite_range_six (hα : 0 ≤ α) (hfeas : c 6 α ^ 2 ≤ A 6 α) : R 6 α < 1 := by
-  have hle : α ≤ 3 := alpha_le_three_six hα hfeas
+  have hle : α ≤ 3 := by
+    have h := alpha_le_half_M (n := 6) (by norm_num) hfeas
+    rw [M_six] at h
+    linarith
   have hP : 0 < -24 * α ^ 4 - 342 * α ^ 3 + 2345 * α ^ 2 - 900 * α + 1575 := by
     nlinarith [mul_nonneg (mul_nonneg (mul_nonneg hα hα) hα) (sub_nonneg.2 hle),
       mul_nonneg (mul_nonneg hα hα) (sub_nonneg.2 hle), sq_nonneg (1103 * α - 450)]

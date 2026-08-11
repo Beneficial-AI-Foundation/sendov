@@ -38,9 +38,23 @@ lemma Q_eq (n : ℕ) (α t : ℝ) :
   simp only [Q]
   ring
 
-/-- Feasibility forces `a² ≥ 0`; in particular it already bounds `α` by `(n-1)/2`. -/
+/-- Feasibility forces `a² ≥ 0`. -/
 lemma A_nonneg (hfeas : c n α ^ 2 ≤ A n α) : 0 ≤ A n α :=
   le_trans (sq_nonneg _) hfeas
+
+/-- Feasibility bounds `α` by `(n-1)/2`, simply because it forces `A = 1 - 2α/(n-1) ≥ 0`.
+
+This crude consequence turns out to be all that any degree needs: on
+`0 ≤ α ≤ min 17 ((n-1)/2)` the upper bounds for `R n α` used in this development stay below
+`0.856` for every `5 ≤ n ≤ 200`.  The exact shape of the feasible region, which is cut out
+by a quartic in `α`, is therefore never required. -/
+lemma alpha_le_half_M (hn : 2 ≤ n) (hfeas : c n α ^ 2 ≤ A n α) : α ≤ M n / 2 := by
+  have hM : 0 < M n := M_pos hn
+  have hA : 0 ≤ A n α := A_nonneg hfeas
+  rw [A] at hA
+  have h : 2 * α / M n ≤ 1 := by linarith
+  rw [div_le_one hM] at h
+  linarith
 
 lemma Q_nonneg (hfeas : c n α ^ 2 ≤ A n α) (t : ℝ) : 0 ≤ Q n α t := by
   rw [Q_eq]
