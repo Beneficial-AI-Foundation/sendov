@@ -8,7 +8,7 @@ between these files, and a reviewer should know which is which.
 | [`design.md`](design.md) | This project's own design record: what is proved, what is open, why the architecture is what it is, and the measured costs behind each decision. | Maintained. Measurements reproducible; claims about the Lean development are checkable against the source. |
 | [`plan-finite-range.md`](plan-finite-range.md) | The original hand-off plan for formalizing the finite range, written before any code existed. | **External, superseded in parts.** See below. |
 | [`proof-large-degree.md`](proof-large-degree.md) | An informal but formalization-ready proof that `stat` is impossible for `n > 100`, plus (in its §9) speculative strategies for lowering the finite cutoff. | **External, not yet formalized.** Its §1–8 arithmetic has been checked; its §9 is explicitly labelled unproved by its author. |
-| [`sendov-blog-post.tex`](sendov-blog-post.tex) | Source of the blog post the claim comes from. `stat` is the equation being formalized. | Draft, unpublished. |
+| [`sendov-blog-post.tex`](sendov-blog-post.tex) | Source of the blog post the claim comes from. `stat` is the equation being formalized. | Draft, unpublished. **To do:** once the post is live, replace this file with a link to it. |
 
 ## Where the plan has been superseded
 

@@ -169,4 +169,73 @@ theorem unpackN_pow (b : ℕ) (hb : 0 < b) (p : List ℕ) (k : ℕ)
   rw [npev_ppowN] at h1
   omega
 
+/-! ### Signed coefficients
+
+The recurrence's middle coefficient `g₁ = -2Dc` is negative, so the polynomials that have to
+be packed have coefficients in `ℤ`.  Packing is still evaluation at the base — the same
+homomorphism — but reading the coefficients back needs *balanced* digits: the representative
+of `x % b` taken in `(-b/2, b/2)` rather than `[0, b)`.  The overflow condition becomes
+`2 * |c| < b`. -/
+
+/-- Evaluate a dense `ℤ`-polynomial at an integer.  This is the signed packing map. -/
+def pevZ : List ℤ → ℤ → ℤ
+  | [], _ => 0
+  | a :: p, b => a + b * pevZ p b
+
+@[simp] lemma pevZ_nil (b : ℤ) : pevZ [] b = 0 := rfl
+
+@[simp] lemma pevZ_cons (a : ℤ) (p : List ℤ) (b : ℤ) :
+    pevZ (a :: p) b = a + b * pevZ p b := rfl
+
+/-- The balanced representative of `x` modulo `b`, lying in `(-b/2, b/2)` when `b` is
+positive and `x` is a balanced digit. -/
+def bdig (b x : ℤ) : ℤ := if 2 * (x % b) < b then x % b else x % b - b
+
+/-- Recover the first `m` balanced digits of a packed `ℤ`-polynomial. -/
+def unpackZ (b : ℤ) : ℕ → ℤ → List ℤ
+  | 0, _ => []
+  | m + 1, x => bdig b x :: unpackZ b m ((x - bdig b x) / b)
+
+@[simp] lemma unpackZ_zero (b x : ℤ) : unpackZ b 0 x = [] := rfl
+
+@[simp] lemma unpackZ_succ (b : ℤ) (m : ℕ) (x : ℤ) :
+    unpackZ b (m + 1) x = bdig b x :: unpackZ b m ((x - bdig b x) / b) := rfl
+
+/-- The balanced digit of `c + b * N` is `c`, provided `2 * |c| < b`. -/
+lemma bdig_add_mul (b c N : ℤ) (hb : 0 < b) (hc : 2 * |c| < b) :
+    bdig b (c + b * N) = c := by
+  have hmod : (c + b * N) % b = c % b := Int.add_mul_emod_self_left c b N
+  by_cases h : 0 ≤ c
+  · rw [abs_of_nonneg h] at hc
+    have hcb : c < b := by linarith
+    have hx : (c + b * N) % b = c := by rw [hmod, Int.emod_eq_of_lt h hcb]
+    simp only [bdig, hx]
+    split_ifs
+    omega
+  · have h' : c < 0 := not_le.1 h
+    rw [abs_of_neg h'] at hc
+    have hcb : c % b = c + b := by
+      have e1 : (c + b) % b = c % b := by simp
+      have e2 : (c + b) % b = c + b := Int.emod_eq_of_lt (by linarith) (by linarith)
+      omega
+    have hx : (c + b * N) % b = c + b := by rw [hmod, hcb]
+    simp only [bdig, hx]
+    split_ifs <;> omega
+
+/-- **Signed packing is faithful.**  If `2 * |c| < b` for every coefficient `c`, the
+coefficients are recovered from the single integer `pevZ p b` by balanced-digit extraction. -/
+theorem unpackZ_pevZ (b : ℤ) (hb : 0 < b) :
+    ∀ p : List ℤ, (∀ a ∈ p, 2 * |a| < b) → unpackZ b p.length (pevZ p b) = p := by
+  intro p
+  induction p with
+  | nil => intro _; rfl
+  | cons a p ih =>
+    intro hlt
+    have ha : 2 * |a| < b := hlt a (List.mem_cons_self ..)
+    have hp : ∀ x ∈ p, 2 * |x| < b := fun x hx => hlt x (List.mem_cons_of_mem _ hx)
+    have hd : bdig b (a + b * pevZ p b) = a := bdig_add_mul b a _ hb ha
+    have hq : (a + b * pevZ p b - a) / b = pevZ p b := by
+      rw [add_sub_cancel_left, Int.mul_ediv_cancel_left _ hb.ne']
+    simp only [List.length_cons, pevZ_cons, unpackZ_succ, hd, hq, ih hp]
+
 end Sendov

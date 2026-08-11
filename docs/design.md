@@ -165,9 +165,10 @@ different high-degree powers. Same degree, entirely different cost.
 
 ## 7. Open work
 
-1. **Packing bridge.** Signed coefficients (`ℤ`-polynomials need balanced-digit unpacking,
-   `|c| < b/2`); connect the packed computation to `qrow`/`rev` so `integral_moment_of`
-   applies unchanged; assemble the moment `Σⱼ R(k,j)/(j+4)`.
+1. **Packing bridge.** Signed coefficients: *done* — `unpackZ_pevZ` recovers a `ℤ`-polynomial
+   from its packed value by balanced-digit extraction, under `2|c| < b`.  Still to do:
+   connect the packed computation to `qrow`/`rev` so `integral_moment_of` applies unchanged,
+   and assemble the moment `Σⱼ R(k,j)/(j+4)`.
 2. **Degrees 9–97**, generated and checked; validate each new path against an
    already-proved degree before bulk generation.
 3. **Composition** of 93 degrees into `finite_range` — a balanced dispatch tree, not one
