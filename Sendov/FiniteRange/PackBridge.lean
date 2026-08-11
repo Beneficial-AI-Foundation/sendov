@@ -517,6 +517,84 @@ lemma wsum_length_le {m : ℕ} (L : ℤ) : ∀ (r : List (List ℤ)) (i : ℕ),
     simp only [wsum_cons, padd_length, List.length_map]
     omega
 
+/-- The weighted sum's `L¹` norm is at most `L` times the row's. -/
+lemma l1_wsum_le (L : ℤ) (hL : 0 ≤ L) : ∀ (r : List (List ℤ)) (i : ℕ),
+    l1 (wsum L i r) ≤ L * l1row r := by
+  intro r
+  induction r with
+  | nil => intro i; simp
+  | cons p r ih =>
+    intro i
+    have hd : (0 : ℤ) < (i : ℤ) + 4 := by positivity
+    have hw0 : 0 ≤ L / ((i : ℤ) + 4) := Int.ediv_nonneg hL hd.le
+    have hw1 : L / ((i : ℤ) + 4) ≤ L := Int.ediv_le_self _ hL
+    have h1 := l1_padd (p.map (fun c => (L / ((i : ℤ) + 4)) * c)) (wsum L (i + 1) r)
+    rw [l1_map_mul, abs_of_nonneg hw0] at h1
+    have h2 := ih (i + 1)
+    have hp := l1_nonneg p
+    have hr := l1row_nonneg r
+    simp only [wsum_cons, l1row_cons]
+    nlinarith [h1, h2, hw0, hw1, hp, hr]
+
+/-! ### The bounds in usable form
+
+Each hypothesis of `Sendov.wsum_eq_of_packed` reduces to an inequality between explicit
+numbers, so a degree file never computes `qrow`. -/
+
+/-- The `τ` bound: the α-packed row entries are bounded by the `L¹` norm times a power of
+`β`, the exponent coming from `Sendov.qrow_entry_length_le`. -/
+theorem rowZ_bound (g₀ g₁ g₂ : List ℤ) (k G : ℕ) (β τ : ℤ) (hβ : 1 ≤ β)
+    (h0 : g₀.length ≤ G) (h1 : g₁.length ≤ G) (h2 : g₂.length ≤ G)
+    (hτ : 2 * ((l1 g₀ + l1 g₁ + l1 g₂) ^ k * β ^ (1 + G * k)) < τ) :
+    ∀ a ∈ rowZ (qrow g₀ g₁ g₂ k) β, 2 * |a| < τ := by
+  intro a ha
+  simp only [rowZ, List.mem_map] at ha
+  obtain ⟨p, hp, rfl⟩ := ha
+  have hlen : p.length ≤ 1 + G * k := qrow_entry_length_le g₀ g₁ g₂ G h0 h1 h2 k p hp
+  have hl1p : l1 p ≤ (l1 g₀ + l1 g₁ + l1 g₂) ^ k :=
+    le_trans (l1_le_l1row _ p hp) (l1row_qrow g₀ g₁ g₂ k)
+  have hpow : β ^ p.length ≤ β ^ (1 + G * k) := pow_le_pow_right₀ hβ hlen
+  have hbpos : (0 : ℤ) < β ^ p.length := by positivity
+  have habs := abs_pevZ_le β hβ p
+  have hl1nn := l1_nonneg p
+  have : |pevZ p β| ≤ (l1 g₀ + l1 g₁ + l1 g₂) ^ k * β ^ (1 + G * k) := by
+    calc |pevZ p β| ≤ l1 p * β ^ p.length := habs
+      _ ≤ (l1 g₀ + l1 g₁ + l1 g₂) ^ k * β ^ (1 + G * k) := by
+          apply mul_le_mul hl1p hpow hbpos.le
+          exact le_trans hl1nn hl1p
+  omega
+
+/-- The `β` bound for the moment numerator. -/
+theorem wsum_bound (g₀ g₁ g₂ : List ℤ) (k : ℕ) (L β : ℤ) (hL : 0 ≤ L)
+    (hβ : 2 * (L * (l1 g₀ + l1 g₁ + l1 g₂) ^ k) < β) :
+    ∀ a ∈ wsum L 0 (qrow g₀ g₁ g₂ k), 2 * |a| < β := by
+  intro a ha
+  have h1 : |a| ≤ l1 (wsum L 0 (qrow g₀ g₁ g₂ k)) := abs_le_l1 _ a ha
+  have h2 := l1_wsum_le L hL (qrow g₀ g₁ g₂ k) 0
+  have h3 : L * l1row (qrow g₀ g₁ g₂ k) ≤ L * (l1 g₀ + l1 g₁ + l1 g₂) ^ k :=
+    mul_le_mul_of_nonneg_left (l1row_qrow g₀ g₁ g₂ k) hL
+  omega
+
+/-- **Pad-tolerant verification.**  Concludes equality of the polynomial *functions*, which
+is all the moment needs, and so requires only length *bounds* rather than an exact match. -/
+theorem pev_wsum_eq_of_packed (g₀ g₁ g₂ : List ℤ) (k m : ℕ) (L β τ : ℤ) (Nmom : List ℤ)
+    (hβ : 0 < β) (hτ : 0 < τ)
+    (hbτ : ∀ a ∈ rowZ (qrow g₀ g₁ g₂ k) β, 2 * |a| < τ)
+    (hbN : ∀ a ∈ Nmom, 2 * |a| < β)
+    (hbW : ∀ a ∈ wsum L 0 (qrow g₀ g₁ g₂ k), 2 * |a| < β)
+    (hlenN : Nmom.length ≤ m)
+    (hlenW : (wsum L 0 (qrow g₀ g₁ g₂ k)).length ≤ m)
+    (hcheck : wsumZ L 0 (unpackZ τ (qrow g₀ g₁ g₂ k).length
+        ((pevZ g₀ β + pevZ g₁ β * τ + pevZ g₂ β * τ ^ 2) ^ k)) = pevZ Nmom β)
+    (α : ℝ) :
+    pev Nmom α = pev (wsum L 0 (qrow g₀ g₁ g₂ k)) α := by
+  rw [rowZ_qrow_eq g₀ g₁ g₂ k β τ hτ hbτ, ← pevZ_wsum] at hcheck
+  have hN := unpackZ_pevZ_le β hβ m Nmom hlenN hbN
+  have hW := unpackZ_pevZ_le β hβ m _ hlenW hbW
+  rw [hcheck, hN] at hW
+  have := congrArg (fun l => pev l α) hW
+  simpa [pev_append_zeros] using this
+
 /-- **The moment from a verified numerator.**  Combining `Sendov.integral_moment_of` with
 `Sendov.pev_wsum`, the integral is an explicit integer polynomial over an explicit
 denominator.  Everything on the right is either supplied by the generator or a kernel
@@ -524,7 +602,7 @@ computation on integers. -/
 theorem integral_moment_packed (n k : ℕ) (hn : 2 ≤ n) (α : ℝ) (hα : 0 ≤ α)
     (L : ℤ) (hL : 0 < L) (Nmom : List ℤ)
     (hdvd : ∀ j, j < 2 * k + 1 → ((0 : ℕ) + j + 4 : ℤ) ∣ L)
-    (hNmom : Nmom = wsum L 0 (qrow (gg0 n) (gg1 n) (gg2 n) k)) :
+    (hNmom : pev Nmom α = pev (wsum L 0 (qrow (gg0 n) (gg1 n) (gg2 n) k)) α) :
     (∫ t in (0 : ℝ)..1, t ^ 3 * Q n α t ^ k)
       = pev Nmom α / ((L : ℝ) * (2 * M n * (3 + α)) ^ k) := by
   have hM : 0 < M n := M_pos hn

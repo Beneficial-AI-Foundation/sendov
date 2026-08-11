@@ -49,6 +49,7 @@ still succeed — a fact that matters repeatedly below.
 | Kronecker packing core | `FiniteRange/Pack.lean` | proved |
 | Packing bridge | `FiniteRange/PackBridge.lean` | proved |
 | Degree 20 via packing | `FiniteRange/Degree20Packed.lean` | proved, cross-checked |
+| Degree 53 moment via packing | `FiniteRange/Degree53Packed.lean` | proved, 10 s |
 | Beta integral (n ≥ 98) | `LargeDegree/Beta.lean` | proved |
 | Certificate generator | `scripts/gen_degree.py` | untrusted, self-checking |
 
@@ -57,12 +58,18 @@ multinomial route (`packed_agrees_twenty`), so the bridge is validated end to en
 
 Open: degrees 9–97, and the analytic `n ≥ 98` argument beyond its Beta core.
 
-The hypotheses of `wsum_eq_of_packed` are now all derivable by arithmetic rather than by
-computing `qrow`: coefficient size from `l1row_qrow`, entry length from
-`qrow_entry_length_le` (an entry of the `k`-th row has length at most `1 + G*k`, where `G`
-bounds the multipliers' lengths), row length from `qrow_length`, and packed magnitude from
-`abs_pevZ_le`.  `Degree20Packed.lean` still discharges them with `decide` — affordable at
-`k = 8` — but a large-`k` degree file can use the lemmas instead.
+The hypotheses are all derivable by arithmetic rather than by computing `qrow`: coefficient
+size from `l1row_qrow`, entry length from `qrow_entry_length_le` (an entry of the `k`-th row
+has length at most `1 + G*k`), row length from `qrow_length`, and packed magnitude from
+`abs_pevZ_le`; `rowZ_bound` and `wsum_bound` package these as numeric inequalities.
+`Degree53Packed.lean` uses them and builds in **10 s** at `k = 24`, so the route is validated
+at the numerically worst degree.  (`Degree20Packed.lean` still uses `decide`, which is
+affordable at `k = 8` and exercises the same statements.)
+
+Parameters there, from the *provable* bounds: `β` 327 bits, `τ` 24,098 bits, `G^k` 1,172,422
+bits.  `τ` is larger than the tighter table above because the provable entry-length bound is
+`1 + 3k = 73` rather than the true `2k+1 = 49`; the cost is a bigger `τ`, not a slower
+build.
 
 ---
 

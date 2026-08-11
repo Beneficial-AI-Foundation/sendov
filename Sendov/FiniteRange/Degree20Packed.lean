@@ -52,7 +52,7 @@ theorem integral_twenty_packed (α : ℝ) (hα : 0 ≤ α) :
     (∫ t in (0 : ℝ)..1, t ^ 3 * Q 20 α t ^ 8)
       = pev Nmom20 α / ((L20 : ℝ) * (2 * M 20 * (3 + α)) ^ 8) :=
   integral_moment_packed 20 8 (by norm_num) α hα L20 (by norm_num [L20]) Nmom20
-    (by decide) Nmom20_eq
+    (by decide) (by rw [Nmom20_eq])
 
 /-- **The cross-check.**  The multinomial formula and the packed recurrence agree.  Neither
 side is expanded: both compute the same integral, so they are equal by transitivity. -/
