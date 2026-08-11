@@ -44,10 +44,17 @@ lemma A_nonneg (hfeas : c n α ^ 2 ≤ A n α) : 0 ≤ A n α :=
 
 /-- Feasibility bounds `α` by `(n-1)/2`, simply because it forces `A = 1 - 2α/(n-1) ≥ 0`.
 
-This crude consequence turns out to be all that any degree needs: on
+This crude consequence is all that the *numerical* step of any degree needs: on
 `0 ≤ α ≤ min 17 ((n-1)/2)` the upper bounds for `R n α` used in this development stay below
-`0.856` for every `5 ≤ n ≤ 100`.  The exact shape of the feasible region, which is cut out
-by a quartic in `α`, is therefore never required. -/
+`0.856` for every `5 ≤ n ≤ 97`.  The exact shape of the feasible region, which is cut out
+by a quartic in `α`, is therefore never required by the polynomial certificates.
+
+This must not be read as saying that `A ≥ 0` replaces feasibility everywhere.  It does not:
+the odd-degree bound needs `0 ≤ Q n α t` on `[0,1]`, which is `Sendov.Q_nonneg` and uses the
+full constraint `c ^ 2 ≤ A` — it does not follow from `A ≥ 0`.  Accordingly
+`Sendov.integral_rpow_le` takes `hfeas` itself, and only the passage from the resulting
+rational function to a polynomial positivity statement is weakened to `α ≤ M n / 2`.  For
+even degrees the moment identity `Sendov.integral_moment` needs no hypothesis at all. -/
 lemma alpha_le_half_M (hn : 2 ≤ n) (hfeas : c n α ^ 2 ≤ A n α) : α ≤ M n / 2 := by
   have hM : 0 < M n := M_pos hn
   have hA : 0 ≤ A n α := A_nonneg hfeas

@@ -23,7 +23,7 @@ mean of the reciprocal critical-point data), the post derives:
 
 * `0 < β(1) < α/(3+α)` (the simplified polar inequality);
 * `α ≤ 17` and an inequality `(1le)`, valid for `n ≥ 5`;
-* the elimination of every degree `n > 100` by an asymptotic argument.
+* the elimination of every degree `n ≥ 98` by an asymptotic argument.
 
 Monotonicity in `β(1)` lets one replace `β(1)` by `α/(3+α)` in `(1le)`, which replaces
 `a x` by `c` and `β(t)` by `Q t` below.  The resulting inequality is equation `stat` of the
@@ -32,7 +32,7 @@ constraint `c ^ 2 ≤ A`, which is what keeps `α` away from its formal upper li
 
 What is left open is that `stat` is infeasible on the remaining range
 
-`5 ≤ n ≤ 100`,  `0 ≤ α ≤ 17`,  `c ^ 2 ≤ A`,
+`5 ≤ n ≤ 97`,  `0 ≤ α ≤ 17`,  `c ^ 2 ≤ A`,
 
 which is exactly `Sendov.finite_range` below.
 
@@ -61,7 +61,7 @@ These are *not* inputs to the proof, and must not be used as hypotheses; they ar
 only to indicate the size of the margin.  Numerically, `R n α` attains a maximum of about
 `0.8529` over the feasible range, at `n = 53`, `α = 17` — which remains inside the range
 below, so shortening it does not make the claim easier.  For comparison, `R 5 0 ≈ 0.6458`
-and `R 100 17 ≈ 0.2763`.  The feasibility constraint is binding at low degree: it caps
+and `R 97 17 ≈ 0.2921`.  The feasibility constraint is binding at low degree: it caps
 `α ≲ 1.68` when `n = 5` and `α ≲ 2.19` when `n = 6`, and only ceases to cut into
 `[0, 17]` from `n = 36` onwards.
 
@@ -97,15 +97,15 @@ noncomputable def R (n : ℕ) (α : ℝ) : ℝ :=
 
 /-- **The finite-range claim.**  The right-hand side of equation `stat` of the blog post is
 strictly less than `1` on the range of degrees and of `α` left open there, that is, on
-`5 ≤ n ≤ 100`, `0 ≤ α ≤ 17`, subject to the feasibility constraint `c ^ 2 ≤ A`. -/
-theorem finite_range (n : ℕ) (α : ℝ) (hn : 5 ≤ n) (hn' : n ≤ 100)
+`5 ≤ n ≤ 97`, `0 ≤ α ≤ 17`, subject to the feasibility constraint `c ^ 2 ≤ A`. -/
+theorem finite_range (n : ℕ) (α : ℝ) (hn : 5 ≤ n) (hn' : n ≤ 97)
     (hα : 0 ≤ α) (hα' : α ≤ 17) (hfeas : c n α ^ 2 ≤ A n α) :
     R n α < 1 := by
   sorry
 
 /-- Equation `stat` of the blog post is infeasible on the remaining range
-`5 ≤ n ≤ 100`, `0 ≤ α ≤ 17`, `c ^ 2 ≤ A`.  This is the form in which the claim is used. -/
-theorem finite_range_contradiction (n : ℕ) (α : ℝ) (hn : 5 ≤ n) (hn' : n ≤ 100)
+`5 ≤ n ≤ 97`, `0 ≤ α ≤ 17`, `c ^ 2 ≤ A`.  This is the form in which the claim is used. -/
+theorem finite_range_contradiction (n : ℕ) (α : ℝ) (hn : 5 ≤ n) (hn' : n ≤ 97)
     (hα : 0 ≤ α) (hα' : α ≤ 17) (hfeas : c n α ^ 2 ≤ A n α) (hstat : 1 ≤ R n α) :
     False :=
   absurd hstat (not_le.2 (finite_range n α hn hn' hα hα' hfeas))
