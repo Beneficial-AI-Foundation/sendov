@@ -3,6 +3,7 @@ import Sendov.FiniteRange.Moments
 import Sendov.FiniteRange.OddBound
 import Sendov.FiniteRange.Pack
 import Sendov.FiniteRange.Recurrence
+import Sendov.FiniteRange.PackBridge
 import Sendov.FiniteRange.Reduce
 import Sendov.FiniteRange.Degree5
 import Sendov.FiniteRange.Degree6

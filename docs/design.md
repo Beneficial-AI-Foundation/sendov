@@ -113,6 +113,28 @@ becomes `Nat` multiplication and the whole recurrence becomes `base ^ k`, one ex
 Measured end to end through the verified `unpackN`: one exponentiation to a 3,042,311-bit
 number plus extraction of all 93 coefficients, **7 s**.
 
+### Numerical parameters
+
+Two bases are needed per degree: `β` packs a coefficient polynomial in `α`, `τ` packs the
+resulting row in `t`.  With `L1 = 30(n-1) - 16` (the sum of `|coefficients|` of `g₀,g₁,g₂`,
+which bounds every coefficient of the `k`-th power) and `L = lcm(4 .. 2k+4)` (clearing the
+`1/(j+4)` weights):
+
+```
+β > 2 · (2k+1) · (L/4) · L1^k        -- fits the moment numerator's coefficients
+τ > 2 · L1^k · (β^(2k+1) - 1)/(β-1)  -- fits the α-packed row entries
+```
+
+| n | k | L1 | L | β | τ | `G^k` |
+|---|---|---|---|---|---|---|
+| 20 | 8 | 554 | 28 b | 104 b | 1,735 b | 0.003 MB |
+| 53 | 24 | 1544 | 72 b | 331 b | 16,107 b | 0.09 MB |
+| 97 | 47 | 2864 | 136 b | 681 b | 64,554 b | 0.72 MB |
+
+Verified at `n = 53` with the real `g` coefficients: the `τ` bound holds, and the kernel
+computes `G^24` (788,991 bits) and extracts all 49 α-packed row entries in **9 s** including
+Lean startup.
+
 ### The packing bound is essentially free
 
 `unpackN_pow` requires `(npev p 1)ᵏ < b`, the sum of coefficients to the `k`-th power.
