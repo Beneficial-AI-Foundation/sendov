@@ -312,6 +312,47 @@ B depending on A, which is backwards.  Both now depend only on `Common`.
 
 ---
 
+## 7b. Gotchas
+
+Bugs met while building this, all of which produced *plausible-looking* wrong output.  They
+are recorded because each cost real time and several would have silently corrupted a
+certificate.
+
+* **Python integer division in a symbolic expression.**  `1/(2*M0)` with `M0` a plain Python
+  `int` is float division; sympy then carries floats through the whole computation.  Worse,
+  `sp.Integer(x)` *truncates* a float without complaint, so the corrupted coefficients looked
+  like clean integers and the Bernstein check still reported "all positive".  Caught only by
+  asserting that the denominator had the expected form `C·(3+α)^p`.  Use `sp.Rational(1, 2*M0)`
+  and assert `c.is_Rational` on every coefficient.
+
+* **A dropped factor of `2ˡ`.**  In `(-2c)ˡ` the `2ˡ` cancels against the denominator of `c`,
+  so the denominator is `Mⁱ`, not `(2M)ˡ M^(i-l)`.  The resulting `P` was wrong by sign and
+  scale yet still admitted a Bernstein representation — with every coefficient negative.
+  **Positivity of a certificate is not evidence that `P` is right.**
+
+* **`sympy.simplify` returning a false mismatch.**  Comparing two large rational expressions,
+  `simplify(lhs - rhs) == 0` reported `False` when they were in fact equal; it had simply
+  failed to reduce.  A symbolic "not equal" from a CAS is weak evidence.  Numerical agreement
+  at several points, or exact evaluation at several rational points, is strong.
+
+* **`sympy.nsimplify` on an exact rational.**  Applied to a `Rational` it "simplified" it into
+  radicals — `32768·2^(29/52)·3^(6/13)·…` — producing unparseable Lean.  Use `.p` and `.q`.
+
+* **Comparing two routes with different denominators.**  The packed and multinomial routes
+  carry different powers of `(3+α)`, so their numerators differ by a factor of `(3+α)`, not by
+  a constant.  A "compare up to scale" check fails spuriously.
+
+* **Shell and encoding.**  Backticks inside a docstring passed through `python -c "..."` are
+  substituted by bash, mangling generated Lean.  Python on Windows writes CRLF unless
+  `newline="
+"` is given, and Lean rejects isolated carriage returns.  `/tmp` in Git Bash is
+  not `/tmp` to Windows Python.
+
+The habit that caught all of these: validate generated data against an *independent*
+computation — quadrature for moments, exact evaluation at several rational points for
+identities — before writing any Lean.  `scripts/gen_moment.py` refuses to emit data that
+fails its quadrature check.
+
 ## 8. Trust policy
 
 No `sorry` (outside the stated goal), no `axiom`, no `native_decide`, no `unsafe`, no
