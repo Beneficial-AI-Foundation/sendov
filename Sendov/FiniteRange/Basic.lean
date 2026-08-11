@@ -1,0 +1,74 @@
+/-
+Copyright (c) 2026 Terence Tao. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Terence Tao
+-/
+import Sendov.Statement
+
+/-!
+# Basic properties of the quantities in the finite-range claim
+
+Elementary facts about `Sendov.M`, `Sendov.A`, `Sendov.c` and `Sendov.Q`, used by every
+degree-specific argument.  The two facts that matter are:
+
+* `Sendov.Q_nonneg`: the feasibility constraint `c ^ 2 ≤ A` says exactly that `Q` is a sum
+  of squares, hence nonnegative.  This is what makes the real power `Q ^ ((n-4)/2)`
+  appearing in `Sendov.R` behave, and in particular avoids the junk values of `Real.rpow`
+  at negative bases.
+* `Sendov.Q_one`: `Q n α 1 = α / (3 + α)`, the value `B` prescribed by the simplified polar
+  inequality of the blog post.  Since `Q n α 1 = 1 - 2 * c n α + A n α`, this pins down
+  `A - 2 * c = B - 1 < 0`, which is what gives `Sendov.Q_le_one`.
+-/
+
+namespace Sendov
+
+variable {n : ℕ} {α t : ℝ}
+
+lemma M_pos (hn : 2 ≤ n) : 0 < M n := by
+  have : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  simp only [M]
+  linarith
+
+lemma three_add_pos (hα : 0 ≤ α) : (0 : ℝ) < 3 + α := by linarith
+
+/-- `Q` written as a sum of squares.  Compare `β(t) = (1 - a x t) ^ 2 + a² t² (1 - x²)`
+in the blog post. -/
+lemma Q_eq (n : ℕ) (α t : ℝ) :
+    Q n α t = (1 - c n α * t) ^ 2 + (A n α - c n α ^ 2) * t ^ 2 := by
+  simp only [Q]
+  ring
+
+/-- Feasibility forces `a² ≥ 0`; in particular it already bounds `α` by `(n-1)/2`. -/
+lemma A_nonneg (hfeas : c n α ^ 2 ≤ A n α) : 0 ≤ A n α :=
+  le_trans (sq_nonneg _) hfeas
+
+lemma Q_nonneg (hfeas : c n α ^ 2 ≤ A n α) (t : ℝ) : 0 ≤ Q n α t := by
+  rw [Q_eq]
+  exact add_nonneg (sq_nonneg _) (mul_nonneg (by linarith) (sq_nonneg _))
+
+/-- `Q n α 1 = B = α / (3 + α)`: the substituted quadratic takes at `t = 1` the value that
+the simplified polar inequality `β(1) < α / (3 + α)` prescribes. -/
+lemma Q_one (hn : 2 ≤ n) (hα : 0 ≤ α) : Q n α 1 = α / (3 + α) := by
+  have hM : M n ≠ 0 := (M_pos hn).ne'
+  have h3 : (3 : ℝ) + α ≠ 0 := (three_add_pos hα).ne'
+  simp only [Q, c, A]
+  field_simp
+  ring
+
+/-- `Q` is convex with `Q 0 = 1` and `Q 1 = B ≤ 1`, hence bounded by `1` on `[0,1]`.
+Needed only for the odd-degree square-root bound. -/
+lemma Q_le_one (hn : 2 ≤ n) (hα : 0 ≤ α) (hfeas : c n α ^ 2 ≤ A n α)
+    (ht0 : 0 ≤ t) (ht1 : t ≤ 1) : Q n α t ≤ 1 := by
+  have hA : 0 ≤ A n α := A_nonneg hfeas
+  have hB : Q n α 1 ≤ 1 := by
+    rw [Q_one hn hα, div_le_one (three_add_pos hα)]
+    linarith
+  have hAc : A n α - 2 * c n α ≤ 0 := by
+    simp only [Q] at hB
+    linarith
+  have h4 : A n α * t ≤ A n α := mul_le_of_le_one_right hA ht1
+  have h5 : A n α * t - 2 * c n α ≤ 0 := by linarith
+  simp only [Q]
+  nlinarith [mul_nonneg ht0 (neg_nonneg.2 h5)]
+
+end Sendov
