@@ -79,6 +79,41 @@ Parameters from the *provable* bounds, and the measured cost:
 `k = 47` is the largest exponent anywhere in `5 ≤ n ≤ 97`, so this is the worst case and it
 costs seconds.
 
+### Batching adjacent degrees
+
+Every term of `R n α` is monotone in `n`: `base_n` decreases, the prefactor
+`A_n² n (n-1) (n-2) / (4(3+α))` increases, and `I_n` decreases (since `Q_{n+1} ≤ Q_n`, and
+the exponent grows while `Q ≤ 1`).  So for a batch `[n₀, n₁]`,
+
+```
+R n α ≤ base_{n₀}(α) + pref_{n₁}(α) · I_{n₀}(α)     for every n in the batch,
+```
+
+one moment and one certificate for the whole batch.  Taking `n₀` even makes `I_{n₀}` an exact
+integer moment.  Crucially the certificate's degree is set by `n₀`, the *smallest* member, so
+a batch is not merely fewer certificates but cheaper ones.
+
+Measured, with certificate cost interpolated from (deg 18, 12 s), (deg 52, 99 s),
+(deg 96, 129 s):
+
+| range | individually | batched | saving |
+|---|---|---|---|
+| `n ∈ [6,40]` | 14.2 min | 3.5 min | 4× |
+| `n ∈ [42,60]` | 28.3 min | 10.2 min | 2.8× |
+| `n ∈ [62,97]` | 69.8 min | 5.6 min | **12.5×** |
+| total | 115 min | 21 min | 5.5× |
+
+Batch sizes track the slack: 2–3 through the tight middle around the `n = 53` peak, rising to
+12 and 16 at the top.  The high degrees — 61% of the cost when done individually — batch best
+precisely because `R n α` falls away from the peak, so they drop to 22% of the batched total.
+21–26 batches cover `6 ≤ n ≤ 97` depending on how much margin is left.
+
+**The plan must be driven by certificate feasibility, not by the numeric bound.**  These do
+not track each other: `[34,36]` at bound `0.9348` admits no single all-positive Bernstein
+certificate, while `[52,53]` at `0.9475` does.  So the generator should attempt a batch,
+check the certificate, and shrink on failure — subdivision in `n`, which does pay, rather
+than in `α`, which was shown unnecessary.  `scripts/plan_batches.py` does the search.
+
 ### Can degrees sharing a `k` share work?
 
 Each `k` serves up to three degrees: `n = 2k+3` (as its upper index), `n = 2k+4` (even), and
