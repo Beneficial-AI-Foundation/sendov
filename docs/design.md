@@ -77,7 +77,27 @@ Parameters from the *provable* bounds, and the measured cost:
 | 97 | 47 | 677 b | 96,593 b | 9.14 Mb | 17 s (both) |
 
 `k = 47` is the largest exponent anywhere in `5 ≤ n ≤ 97`, so this is the worst case and it
-costs seconds.  `τ` exceeds the earlier estimate because the provable entry-length bound is
+costs seconds.
+
+### Can degrees sharing a `k` share work?
+
+Each `k` serves up to three degrees: `n = 2k+3` (as its upper index), `n = 2k+4` (even), and
+`n = 2k+5` (as its lower index).  But the split is unfavourable:
+
+* `k` only, shareable: `L = lcm(4 .. 2k+4)`, `mlen = 1 + 3k`, the divisibility obligation;
+* `n` only: `L1 = 30(n-1) - 16`;
+* **both**: `β`, `τ`, `Nmom`, and the row itself, since `g₀,g₁,g₂` depend on `n`.
+
+The row is the expensive object, so three degrees sharing a `k` still need three separate
+exponentiations.  Measured at `k = 47`: the packed check alone is essentially the entire
+per-moment cost, the shared items together being a 136-bit numeral and a divisibility fact.
+Factoring them out would save under a second per degree, so it is not worth a separate
+`k`-indexed module.
+
+(Treating `M = n-1` as a third Kronecker variable *would* let one computation serve all
+degrees, but the row acquires an `M`-degree of `k`, making the packed object roughly `k`
+times larger — about 430 Mbit at `k = 47`.  That trades a factor of `93/k ≈ 2` at best for a
+much larger object, and loses outright at small `k`.)  `τ` exceeds the earlier estimate because the provable entry-length bound is
 `1 + 3k` rather than the true `2k+1`; the multipliers have degree ≤ 2, so a sharper induction
 would recover it, but the cost is a bigger `τ`, not a slower build.
 

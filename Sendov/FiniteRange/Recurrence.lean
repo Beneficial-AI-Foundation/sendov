@@ -231,6 +231,12 @@ def gg1 (n : ℕ) : List ℤ := [-12 * ((n : ℤ) - 1), 12 - 2 * ((n : ℤ) - 1)
 /-- `D A`, as an integer polynomial in `α`. -/
 def gg2 (n : ℕ) : List ℤ := [6 * ((n : ℤ) - 1), 2 * ((n : ℤ) - 1) - 12, -4]
 
+@[simp] lemma gg0_length (n : ℕ) : (gg0 n).length = 2 := rfl
+
+@[simp] lemma gg1_length (n : ℕ) : (gg1 n).length = 3 := rfl
+
+@[simp] lemma gg2_length (n : ℕ) : (gg2 n).length = 3 := rfl
+
 lemma DQ_eq (n : ℕ) (hn : 2 ≤ n) (α t : ℝ) (hα : 0 ≤ α) :
     (2 * M n * (3 + α)) * Q n α t
       = pev (gg0 n) α + pev (gg1 n) α * t + pev (gg2 n) α * t ^ 2 := by
