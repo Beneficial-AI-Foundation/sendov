@@ -50,6 +50,7 @@ still succeed — a fact that matters repeatedly below.
 | Packing bridge | `FiniteRange/PackBridge.lean` | proved |
 | Degree 20 via packing | `FiniteRange/Degree20Packed.lean` | proved, cross-checked |
 | Degree 53 moment via packing | `FiniteRange/Degree53Packed.lean` | proved, 10 s |
+| Degree 97 moments (k = 46, 47) | `FiniteRange/Degree97Packed.lean` | proved, 17 s |
 | Beta integral (n ≥ 98) | `LargeDegree/Beta.lean` | proved |
 | Certificate generator | `scripts/gen_degree.py` | untrusted, self-checking |
 
@@ -66,10 +67,19 @@ has length at most `1 + G*k`), row length from `qrow_length`, and packed magnitu
 at the numerically worst degree.  (`Degree20Packed.lean` still uses `decide`, which is
 affordable at `k = 8` and exercises the same statements.)
 
-Parameters there, from the *provable* bounds: `β` 327 bits, `τ` 24,098 bits, `G^k` 1,172,422
-bits.  `τ` is larger than the tighter table above because the provable entry-length bound is
-`1 + 3k = 73` rather than the true `2k+1 = 49`; the cost is a bigger `τ`, not a slower
-build.
+Parameters from the *provable* bounds, and the measured cost:
+
+| n | k | β | τ | `G^k` | build |
+|---|---|---|---|---|---|
+| 20 | 8 | 104 b | 1,735 b | 0.003 MB | 11 s |
+| 53 | 24 | 327 b | 24,098 b | 1.17 Mb | 10 s |
+| 97 | 46 | 659 b | 92,038 b | 8.53 Mb | — |
+| 97 | 47 | 677 b | 96,593 b | 9.14 Mb | 17 s (both) |
+
+`k = 47` is the largest exponent anywhere in `5 ≤ n ≤ 97`, so this is the worst case and it
+costs seconds.  `τ` exceeds the earlier estimate because the provable entry-length bound is
+`1 + 3k` rather than the true `2k+1`; the multipliers have degree ≤ 2, so a sharper induction
+would recover it, but the cost is a bigger `τ`, not a slower build.
 
 ---
 
