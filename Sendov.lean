@@ -1,4 +1,5 @@
-import Sendov.FiniteRange.Basic
+import Sendov.Common.Basic
+import Sendov.Common.Rpow
 import Sendov.FiniteRange.Moments
 import Sendov.FiniteRange.OddBound
 import Sendov.FiniteRange.Pack

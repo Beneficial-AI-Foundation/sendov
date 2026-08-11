@@ -3,7 +3,7 @@ Copyright (c) 2026 Terence Tao. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Terence Tao
 -/
-import Sendov.FiniteRange.Basic
+import Sendov.Common.Rpow
 
 /-!
 # The odd-degree bound
@@ -53,17 +53,6 @@ lemma rpow_add_half_le (hq : 0 ≤ q) (k : ℕ) (hw : 0 < w) :
     refine mul_nonneg (pow_nonneg le_rfl k) ?_
     rw [zero_div]
     linarith
-
-/-- `fun x ↦ x ^ e` is continuous on all of `ℝ` for a nonnegative real exponent `e`. -/
-lemma continuous_rpow_const {e : ℝ} (he : 0 ≤ e) : Continuous fun x : ℝ => x ^ e :=
-  continuous_iff_continuousAt.2 fun x => Real.continuousAt_rpow_const x e (Or.inr he)
-
-lemma continuous_integrand (n : ℕ) (α : ℝ) {e : ℝ} (he : 0 ≤ e) :
-    Continuous fun t : ℝ => t ^ 3 * Q n α t ^ e := by
-  have hQ : Continuous fun t : ℝ => Q n α t := by
-    simp only [Q]; fun_prop
-  have h3 : Continuous fun t : ℝ => t ^ 3 := by fun_prop
-  exact h3.mul ((continuous_rpow_const he).comp hQ)
 
 /-- **The odd-degree bound.**  The square root is eliminated in favour of polynomial
 moments, at the cost of a free parameter `w > 0`. -/

@@ -3,7 +3,7 @@ Copyright (c) 2026 Terence Tao. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Terence Tao
 -/
-import Sendov.FiniteRange.Basic
+import Sendov.Common.Rpow
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
 /-!
@@ -32,17 +32,6 @@ so every numerical constant downstream of the Gamma bound remains valid
 namespace Sendov
 
 open MeasureTheory
-
-/-- `∫₀¹ xˢ dx = 1/(s+1)` for `s > -1`. -/
-lemma integral_rpow_zero_one {s : ℝ} (hs : -1 < s) :
-    (∫ x in (0 : ℝ)..1, x ^ s) = 1 / (s + 1) := by
-  rw [integral_rpow (Or.inl hs), Real.one_rpow, Real.zero_rpow (by linarith)]
-  ring
-
-/-- `x ^ (s + m) = x ^ s * x ^ m` for positive `x` and a natural `m`. -/
-lemma rpow_add_nat_pos {x : ℝ} (hx : 0 < x) (s : ℝ) (m : ℕ) :
-    x ^ (s + (m : ℝ)) = x ^ s * x ^ m := by
-  rw [Real.rpow_add hx, Real.rpow_natCast]
 
 /-- The Beta integral `B(4, s+1)`. -/
 lemma integral_cube_mul_rpow {s : ℝ} (hs : 0 < s) :
@@ -77,7 +66,7 @@ lemma integral_cube_mul_rpow {s : ℝ} (hs : 0 < s) :
   have hi : ∀ m : ℕ, IntervalIntegrable (fun x : ℝ => x ^ (s + (m : ℕ))) volume 0 1 := by
     intro m
     apply intervalIntegral.intervalIntegrable_rpow'
-    push_cast
+    have hm : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
     linarith
   have hc : ∀ (a : ℝ) (m : ℕ),
       IntervalIntegrable (fun x : ℝ => a * x ^ (s + (m : ℕ))) volume 0 1 :=

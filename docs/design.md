@@ -39,13 +39,15 @@ still succeed — a fact that matters repeatedly below.
 | component | file | state |
 |---|---|---|
 | Claim statement | `Statement.lean` | 1 `sorry` (the goal) |
-| Basic properties | `FiniteRange/Basic.lean` | proved |
+| Basic properties (shared A/B) | `Common/Basic.lean` | proved |
+| Real powers, integrability (shared A/B) | `Common/Rpow.lean` | proved |
 | Moment formula (M) | `FiniteRange/Moments.lean` | proved |
 | Odd-degree bound | `FiniteRange/OddBound.lean` | proved |
 | Per-degree reduction | `FiniteRange/Reduce.lean` | proved |
 | Degrees 5, 6, 7, 8, 20 | `FiniteRange/Degree*.lean` | proved, no `sorryAx` |
 | Moment recurrence | `FiniteRange/Recurrence.lean` | proved; too slow to use (§4) |
 | Kronecker packing core | `FiniteRange/Pack.lean` | proved |
+| Packing bridge | `FiniteRange/PackBridge.lean` | proved |
 | Beta integral (n ≥ 98) | `LargeDegree/Beta.lean` | proved |
 | Certificate generator | `scripts/gen_degree.py` | untrusted, self-checking |
 
@@ -202,6 +204,23 @@ different high-degree powers. Same degree, entirely different cost.
    exact rational.
 5. **Audit**: `#print axioms`, forbidden-token grep, clean rebuild from the pinned toolchain,
    and a mutation test — corrupt one certificate coefficient and confirm the build fails.
+
+---
+
+## 7a. What the two workstreams share
+
+The finite range (A) and the large-degree argument (B) are independent strategies but rest on
+the same foundation, now collected under `Sendov/Common/`:
+
+* `Common/Basic.lean` — `Q_eq` (the sum-of-squares form) and `Q_nonneg` are exactly `(5)` of
+  the large-degree write-up; `Q_one` is its `(6)`; and `R_le_of_integral_le` is the shape of
+  *both* arguments, since each proceeds by bounding the integral and then bounding `R`.
+* `Common/Rpow.lean` — `continuous_integrand` is used by A to compare integrals and is what B
+  needs to split `∫₀¹` at the vertex of `Q`; `rpow_add_nat_pos` serves the Beta integral and
+  the `B^((n-4)/2) = B^k √B` reduction alike; `rpow_le_rpow_of_le_one` drops the `√B`.
+
+Before this was factored out, `LargeDegree/Beta.lean` imported `FiniteRange/Basic.lean` —
+B depending on A, which is backwards.  Both now depend only on `Common`.
 
 ---
 
