@@ -131,4 +131,208 @@ theorem pev_wsum (L : ℤ) : ∀ (r : List (List ℤ)) (i : ℕ) (α : ℝ),
     field_simp
     linear_combination (pev p α) * hcast
 
+/-! ### Coefficient bounds
+
+Injectivity of packing needs a bound on the coefficients of *both* lists compared — including
+the true row, which is precisely the object we must not compute.  So the bound has to be
+proved rather than checked.  The `L¹` norm does it: it is submultiplicative, so a coefficient
+of the `k`-th power is at most `(l1 g₀ + l1 g₁ + l1 g₂) ^ k`. -/
+
+/-- Sum of absolute values of the coefficients. -/
+def l1 : List ℤ → ℤ
+  | [] => 0
+  | a :: p => |a| + l1 p
+
+@[simp] lemma l1_nil : l1 [] = 0 := rfl
+
+@[simp] lemma l1_cons (a : ℤ) (p : List ℤ) : l1 (a :: p) = |a| + l1 p := rfl
+
+lemma l1_nonneg (p : List ℤ) : 0 ≤ l1 p := by
+  induction p with
+  | nil => simp
+  | cons a p ih => have := abs_nonneg a; simp only [l1_cons]; omega
+
+lemma abs_le_l1 : ∀ (p : List ℤ) (a : ℤ), a ∈ p → |a| ≤ l1 p := by
+  intro p
+  induction p with
+  | nil => intro a ha; cases ha
+  | cons c p ih =>
+    intro a ha
+    rcases List.mem_cons.1 ha with h | h
+    · subst h; have := l1_nonneg p; simp only [l1_cons]; omega
+    · have := ih a h; have := abs_nonneg c; simp only [l1_cons]; omega
+
+lemma l1_padd (p q : List ℤ) : l1 (padd p q) ≤ l1 p + l1 q := by
+  induction p generalizing q with
+  | nil => simp [padd]
+  | cons a p ih =>
+    cases q with
+    | nil => simp [padd]
+    | cons b q =>
+      have h1 := ih q
+      have h2 := abs_add_le a b
+      simp only [padd, l1_cons]
+      omega
+
+lemma l1_map_mul (c : ℤ) (q : List ℤ) : l1 (q.map (fun x => c * x)) = |c| * l1 q := by
+  induction q with
+  | nil => simp
+  | cons b q ih =>
+    simp only [List.map_cons, l1_cons, ih, abs_mul]
+    ring
+
+lemma l1_pmul (p q : List ℤ) : l1 (pmul p q) ≤ l1 p * l1 q := by
+  induction p with
+  | nil => simp [pmul]
+  | cons a p ih =>
+    have hstep : l1 (padd (q.map (fun c => a * c)) (0 :: pmul p q))
+        ≤ |a| * l1 q + l1 (pmul p q) := by
+      have := l1_padd (q.map (fun c => a * c)) (0 :: pmul p q)
+      rw [l1_map_mul] at this
+      simpa using this
+    have hq := l1_nonneg q
+    simp only [pmul, l1_cons]
+    nlinarith [ih, hq, hstep]
+
+/-- The `L¹` norm of a row: the total of its coefficients' absolute values. -/
+def l1row : List (List ℤ) → ℤ
+  | [] => 0
+  | p :: r => l1 p + l1row r
+
+@[simp] lemma l1row_nil : l1row [] = 0 := rfl
+
+@[simp] lemma l1row_cons (p : List ℤ) (r : List (List ℤ)) :
+    l1row (p :: r) = l1 p + l1row r := rfl
+
+lemma l1row_nonneg (r : List (List ℤ)) : 0 ≤ l1row r := by
+  induction r with
+  | nil => simp
+  | cons p r ih => have := l1_nonneg p; simp only [l1row_cons]; omega
+
+lemma l1row_radd (r s : List (List ℤ)) : l1row (radd r s) ≤ l1row r + l1row s := by
+  induction r generalizing s with
+  | nil => simp [radd]
+  | cons p r ih =>
+    cases s with
+    | nil => simp [radd]
+    | cons q s =>
+      have h1 := ih s
+      have h2 := l1_padd p q
+      simp only [radd, l1row_cons]
+      omega
+
+lemma l1row_rscale (g : List ℤ) (r : List (List ℤ)) :
+    l1row (rscale g r) ≤ l1 g * l1row r := by
+  induction r with
+  | nil => simp [rscale]
+  | cons p r ih =>
+    have := l1_pmul g p
+    simp only [rscale, List.map_cons, l1row_cons] at *
+    nlinarith [ih, l1_nonneg g, l1row_nonneg r]
+
+lemma l1row_qstep (g₀ g₁ g₂ : List ℤ) (r : List (List ℤ)) :
+    l1row (qstep g₀ g₁ g₂ r) ≤ (l1 g₀ + l1 g₁ + l1 g₂) * l1row r := by
+  have h0 := l1row_rscale g₀ r
+  have h1 := l1row_rscale g₁ r
+  have h2 := l1row_rscale g₂ r
+  have e1 := l1row_radd (rscale g₀ r) (radd ([] :: rscale g₁ r) ([] :: [] :: rscale g₂ r))
+  have e2 := l1row_radd ([] :: rscale g₁ r) ([] :: [] :: rscale g₂ r)
+  simp only [qstep, l1row_cons, l1_nil] at *
+  nlinarith [e1, e2, h0, h1, h2]
+
+/-- The coefficients of the `k`-th power are bounded by the `k`-th power of the `L¹` norm.
+This is the bound that the packing base must exceed. -/
+theorem l1row_qrow (g₀ g₁ g₂ : List ℤ) (k : ℕ) :
+    l1row (qrow g₀ g₁ g₂ k) ≤ (l1 g₀ + l1 g₁ + l1 g₂) ^ k := by
+  induction k with
+  | zero => simp [qrow]
+  | succ k ih =>
+    have hg : 0 ≤ l1 g₀ + l1 g₁ + l1 g₂ := by
+      have := l1_nonneg g₀; have := l1_nonneg g₁; have := l1_nonneg g₂; omega
+    calc l1row (qrow g₀ g₁ g₂ (k + 1))
+        ≤ (l1 g₀ + l1 g₁ + l1 g₂) * l1row (qrow g₀ g₁ g₂ k) := l1row_qstep _ _ _ _
+      _ ≤ (l1 g₀ + l1 g₁ + l1 g₂) * (l1 g₀ + l1 g₁ + l1 g₂) ^ k := by
+          exact mul_le_mul_of_nonneg_left ih hg
+      _ = (l1 g₀ + l1 g₁ + l1 g₂) ^ (k + 1) := by ring
+
+/-! ### The verification step
+
+The generator supplies the moment numerator; Lean checks it with one integer comparison. -/
+
+/-- The weighted sum computed directly on the α-packed row. -/
+def wsumZ (L : ℤ) : ℕ → List ℤ → ℤ
+  | _, [] => 0
+  | i, a :: s => (L / ((i : ℤ) + 4)) * a + wsumZ L (i + 1) s
+
+@[simp] lemma wsumZ_nil (L : ℤ) (i : ℕ) : wsumZ L i [] = 0 := rfl
+
+@[simp] lemma wsumZ_cons (L : ℤ) (i : ℕ) (a : ℤ) (s : List ℤ) :
+    wsumZ L i (a :: s) = (L / ((i : ℤ) + 4)) * a + wsumZ L (i + 1) s := rfl
+
+lemma pevZ_padd (p q : List ℤ) (b : ℤ) : pevZ (padd p q) b = pevZ p b + pevZ q b := by
+  induction p generalizing q with
+  | nil => simp [padd]
+  | cons a p ih =>
+    cases q with
+    | nil => simp [padd]
+    | cons c q => simp only [padd, pevZ_cons, ih]; ring
+
+lemma pevZ_map_mul (c : ℤ) (q : List ℤ) (b : ℤ) :
+    pevZ (q.map (fun x => c * x)) b = c * pevZ q b := by
+  induction q with
+  | nil => simp
+  | cons x q ih => simp only [List.map_cons, pevZ_cons, ih]; ring
+
+/-- The packed weighted sum agrees with packing the weighted sum: this is what makes the
+check a single integer comparison. -/
+lemma pevZ_wsum (L : ℤ) : ∀ (r : List (List ℤ)) (i : ℕ) (β : ℤ),
+    pevZ (wsum L i r) β = wsumZ L i (rowZ r β) := by
+  intro r
+  induction r with
+  | nil => intro i β; simp
+  | cons p r ih =>
+    intro i β
+    simp only [wsum_cons, pevZ_padd, pevZ_map_mul, rowZ_cons, wsumZ_cons, ih]
+
+/-- Packing is injective on lists of the same length with coefficients below `β/2`. -/
+lemma pevZ_inj (β : ℤ) (hβ : 0 < β) (p q : List ℤ)
+    (hp : ∀ a ∈ p, 2 * |a| < β) (hq : ∀ a ∈ q, 2 * |a| < β)
+    (hlen : p.length = q.length) (h : pevZ p β = pevZ q β) : p = q := by
+  have h1 := unpackZ_pevZ β hβ p hp
+  have h2 := unpackZ_pevZ β hβ q hq
+  rw [← h1, ← h2, hlen, h]
+
+/-- **Verification of a supplied moment numerator.**  Given the overflow bounds, checking a
+generator-supplied `Nmom` is one integer comparison against the packed computation — which is
+a single exponentiation and `2k+1` digit extractions. -/
+theorem wsum_eq_of_packed (g₀ g₁ g₂ : List ℤ) (k : ℕ) (L β τ : ℤ) (Nmom : List ℤ)
+    (hβ : 0 < β) (hτ : 0 < τ)
+    (hbτ : ∀ a ∈ rowZ (qrow g₀ g₁ g₂ k) β, 2 * |a| < τ)
+    (hbN : ∀ a ∈ Nmom, 2 * |a| < β)
+    (hbW : ∀ a ∈ wsum L 0 (qrow g₀ g₁ g₂ k), 2 * |a| < β)
+    (hlen : Nmom.length = (wsum L 0 (qrow g₀ g₁ g₂ k)).length)
+    (hcheck : wsumZ L 0 (unpackZ τ (qrow g₀ g₁ g₂ k).length
+        ((pevZ g₀ β + pevZ g₁ β * τ + pevZ g₂ β * τ ^ 2) ^ k)) = pevZ Nmom β) :
+    Nmom = wsum L 0 (qrow g₀ g₁ g₂ k) := by
+  rw [rowZ_qrow_eq g₀ g₁ g₂ k β τ hτ hbτ, ← pevZ_wsum] at hcheck
+  exact pevZ_inj β hβ _ _ hbN hbW hlen hcheck.symm
+
+/-- Every coefficient of every entry of a row is bounded by the row's `L¹` norm. -/
+lemma abs_le_l1row : ∀ (r : List (List ℤ)) (p : List ℤ), p ∈ r → ∀ a ∈ p, |a| ≤ l1row r := by
+  intro r
+  induction r with
+  | nil => intro p hp; cases hp
+  | cons q r ih =>
+    intro p hp a ha
+    rcases List.mem_cons.1 hp with h | h
+    · subst h
+      have := abs_le_l1 p a ha
+      have := l1row_nonneg r
+      simp only [l1row_cons]
+      omega
+    · have := ih p h a ha
+      have := l1_nonneg q
+      simp only [l1row_cons]
+      omega
+
 end Sendov
