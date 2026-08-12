@@ -59,3 +59,5 @@ import Sendov.Reduction.Polar
 import Sendov.Reduction.BetaBound
 import Sendov.Reduction.Stat
 import Sendov.Reduction.Simplified
+import Sendov.Reduction.Alpha17
+import Sendov.Reduction.Main

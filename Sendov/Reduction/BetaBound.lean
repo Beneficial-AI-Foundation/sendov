@@ -67,6 +67,23 @@ lemma integral_exp_eq (hα : 0 < α) (hB : B < 2) :
   rw [Real.sinh_eq, hEF, hsq, hneg]
   field_simp
 
+/-- The same integral, in the form the logarithmic half of `(beta-bound)` uses. -/
+lemma integral_exp_eq' (hα : 0 < α) (hB : B < 2) :
+    (∫ t in (0 : ℝ)..1, exp (α * (-1 + (2 - B) * t)))
+      = (exp (α * (1 - B)) - exp (-α)) / (α * (2 - B)) := by
+  have hkpos : 0 < α * (2 - B) := by
+    have : 0 < 2 - B := by linarith
+    positivity
+  have hrw : ∀ t : ℝ, α * (-1 + (2 - B) * t) = -α + α * (2 - B) * t := by
+    intro t; ring
+  simp only [hrw, Real.exp_add]
+  rw [intervalIntegral.integral_const_mul, integral_exp_mul hkpos.ne' 0 1]
+  simp only [mul_zero, Real.exp_zero]
+  have hsum : exp (-α) * exp (α * (2 - B) * 1) = exp (α * (1 - B)) := by
+    rw [← Real.exp_add]; congr 1; ring
+  rw [← hsum]
+  field_simp
+
 /-- `(lt)` forces `B < 2`: otherwise the integrand never exceeds `e^{-α} < 1`. -/
 lemma beta_lt_two (hα : 0 < α)
     (hlt : 1 ≤ ∫ t in (0 : ℝ)..1, exp (α * (-1 + (2 - B) * t))) : B < 2 := by
@@ -117,5 +134,22 @@ theorem beta_le (hα : 0 < α) (hB0 : 0 ≤ B)
   rw [le_div_iff₀ (by linarith : (0 : ℝ) < 3 + α)]
   rw [hudef] at h5
   nlinarith [h5, hα]
+
+/-- **The logarithmic half of `(beta-bound)`:** `log α ≤ α(1 - β(1))`.  From `(lt)`,
+`e^{α(1-B)} ≥ α(2-B) + e^{-α} > α`, since `B ≤ 1` makes `2 - B ≥ 1`. -/
+theorem log_le_alpha_mul (hα : 0 < α) (hB1 : B ≤ 1)
+    (hlt : 1 ≤ ∫ t in (0 : ℝ)..1, exp (α * (-1 + (2 - B) * t))) :
+    Real.log α ≤ α * (1 - B) := by
+  have hB2 : B < 2 := by linarith
+  rw [integral_exp_eq' hα hB2] at hlt
+  have hden : (0 : ℝ) < α * (2 - B) := by
+    have : (0 : ℝ) < 2 - B := by linarith
+    positivity
+  rw [le_div_iff₀ hden, one_mul] at hlt
+  have hge : α ≤ α * (2 - B) := by nlinarith
+  have hlt' : α < exp (α * (1 - B)) := by
+    have := Real.exp_pos (-α)
+    linarith
+  exact (Real.log_le_iff_le_exp hα).2 hlt'.le
 
 end Sendov

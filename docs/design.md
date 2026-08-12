@@ -65,7 +65,8 @@ still succeed — a fact that matters repeatedly below.
 | `(lt) ⟹ (beta-bound)` | `Reduction/BetaBound.lean` | proved |
 | `(origin-exact) ⟹ (1le)` | `Reduction/Simplified.lean` | proved |
 | `(1le)+(beta-bound) ⟹ stat` | `Reduction/Stat.lean` | proved |
-| `⟹ α ≤ 17` | `Reduction/Alpha17.lean` | **open** |
+| `⟹ α ≤ 17` | `Reduction/Alpha17.lean` | proved |
+| **`(1Q)` and `(origin-exact)` incompatible** | **`Reduction/Main.lean`** | **proved** |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
 | Mutation test | `scripts/mutation_test.sh` | passes |
@@ -310,11 +311,11 @@ different high-degree powers. Same degree, entirely different cost.
 
 ## 6b. Next target: `{1Q}` and `{origin-exact}` are incompatible
 
-`stat` is now known infeasible for every `n ≥ 5`, `α ≤ 17`.  The blog post derives `stat` from
-the raw polar inequality `{1Q}` and the raw origin inequality `{origin-exact}`, and those two
-also force `α ≤ 17`, so the next target is that **`{1Q}` and `{origin-exact}` are not
+*Done.*  `Sendov.polar_origin_incompatible` proves that **`{1Q}` and `{origin-exact}` are not
 simultaneously satisfiable for `n ≥ 5`** — a statement with no complex numbers and no
-polynomials in it, in the real variables `a ∈ (0,1)` and `x ∈ [-1,1]` alone.
+polynomials in it, in the real variables `a ∈ (0,1)` and `x ∈ [-1,1]` alone.  Everything the
+blog post leaves to computation is now formalized; what remains outside Lean is the
+complex-analytic derivation of the two raw inequalities themselves.
 
 The chain, all links checked numerically and symbolically before any Lean was written:
 
@@ -322,7 +323,7 @@ The chain, all links checked numerically and symbolically before any Lean was wr
 |---|---|
 | `{1Q} ⟹ {lt}` | **proved**, `Sendov.polar_exp`.  The pointwise bound `(at)` is an *identity* up to `t² ≤ t`: rhs − lhs = `(2α/(n−1))²(t−t²)` |
 | `{lt} ⟹ {beta-bound}` | **proved**, `Sendov.beta_le` |
-| `{beta-bound}+{origin-exact} ⟹ {17}` | max of the bound is `1.817 < 2` at `n = 51, α = 17` |
+| `{beta-bound}+{origin-exact} ⟹ {17}` | **proved**, `Sendov.alpha_le_seventeen` |
 | `{origin-exact} ⟹ {1le}` | **proved**, `Sendov.one_le_of_origin` |
 | `{1le}+{beta-bound} ⟹ {stat}` | **proved**, `Sendov.stat_of_one_le` |
 
@@ -540,6 +541,18 @@ certificate.
   intermittently with `failed to read …olean.private` on *toolchain* files.  Same OOM, but it
   looks like a corrupted install.  A retry loop gets through it; restarting the Lean server
   fixes it properly.
+
+* **`set` introduces a local *definition*, which `linarith` unfolds.**  After
+  `set v := M n / (2*α) - 1`, goals that were linear in `v` became nonlinear in `α`, because
+  `linarith`'s preprocessing zeta-reduces the binding.  `obtain ⟨v, hvdef⟩ : ∃ w, w = … :=
+  ⟨_, rfl⟩` gives an opaque local instead.  The same binding also makes `rw … at h` appear to
+  do nothing, since the term refolds.
+
+* **`linarith` does not always evaluate `OfScientific` literals.**  `α / 2.7 ≤ 0.1852 * (2*α)`
+  is linear in `α` with rational coefficients, but `linarith` failed on it; splitting out the
+  numeric step with an explicit `div_le_iff₀` and letting `norm_num` see `2.7` on its own
+  worked.  Decimal literals are fine inside `nlinarith` hint terms and in `norm_num` goals —
+  it is the coefficient extraction that is fragile.
 
 The habit that caught all of these: validate generated data against an *independent*
 computation — quadrature for moments, exact evaluation at several rational points for
