@@ -19,9 +19,17 @@ theorem Sendov.phelps_rodriguez {n : ℕ} (hn : 2 ≤ n) {p : ℂ[X]} (hdeg : p.
 Both are in [`Sendov/Conjecture.lean`](Sendov/Conjecture.lean), and both depend on
 `propext`, `Classical.choice` and `Quot.sound` only.
 
+[`Challenge.lean`](Challenge.lean) is the statement of record: 84 lines, importing only
+Mathlib, declaring no definitions of its own, and stating exactly these two theorems.
+[`Solution.lean`](Solution.lean) proves them. A reader who wants to check *what* has been
+proved should read `Challenge.lean` and need not read anything else.
+
 ## Trust
 
-* no `sorry` and no project-defined `axiom`;
+* no `sorry` and no project-defined `axiom`, with one deliberate exception: `Challenge.lean`
+  *states* the two theorems without proving them, which is what makes it the statement of
+  record for Comparator to check `Solution.lean` against. `scripts/audit.sh` requires exactly
+  those two holes and no others, and forbids `sorry` everywhere else including `Solution.lean`;
 * no `native_decide`, no `unsafe`, no floating point in any statement or proof;
 * `maxHeartbeats` / `maxRecDepth` appear only as deliberate resource knobs, each with an
   explanatory comment.
@@ -71,3 +79,33 @@ bash scripts/audit.sh
 
 Memory, not time, is the binding constraint on a full build; `scripts/staged_build.sh` builds
 the certificate files in batches.
+
+## Provenance
+
+**Nothing here is claimed to be new.** Sendov's conjecture had already been proved, and
+already formalized in Lean — independently, and before this work — by Lech Mazur, at
+[ProofAtlas](https://www.proofatlas.ai/formalizations/sendov-conjecture/). Priority for the
+first machine-checked proof belongs to that work. This development shares no code with it and
+was written instead from a later, much shorter informal argument; it additionally proves the
+Phelps–Rodriguez equality classification, which that formalization does not state.
+
+The informal proof formalized here is a digestion of the argument, which also yields a new
+proof of Rubinstein's boundary theorem. `docs/design.md` records the design decisions, and
+`formalization.yaml` records the full source list and relationships.
+
+## How this was produced
+
+Essentially all of the Lean source in this repository was written by **Claude Opus 5**
+(Anthropic), working interactively in Claude Code under the direction and review of the
+author: choosing the Lean formulations, finding and repairing proofs, and designing the
+certificate machinery. The author set the targets, supplied the informal proof and the staged
+plans in `docs/`, made the mathematical decisions, and reviewed the output as it was produced.
+No external or independent review has been performed.
+
+The Bernstein certificates in `Sendov/FiniteRange/` are emitted by the Python scripts in
+`scripts/`. Those scripts are outside the trusted base: they write Lean source that Lean
+re-verifies from scratch, so a bug in them causes a build failure, not an unsound theorem.
+
+## Licence
+
+Apache-2.0; see [`LICENSE`](LICENSE).
