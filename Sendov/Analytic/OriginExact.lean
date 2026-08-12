@@ -142,6 +142,42 @@ lemma norm_Worigin_le {n : ℕ} {a x y : ℝ} (ha0 : 0 < a) (ha1 : a < 1)
     nlinarith [hy2, hslow, ha2, sq_nonneg y, hn1]
   linarith [hmain, htail]
 
+/-- `x` and `y` are determined by `q.sum`, and inherit two bounds from `‖qⱼ‖ ≤ 1`: the real
+part is what the polar and origin estimates need, and `x² + y² ≤ 1` is what eliminates `y`. -/
+lemma xy_bounds {n : ℕ} (hn : 2 ≤ n) {x y : ℝ} {q : Multiset ℂ}
+    (hqcard : q.card = n - 1) (hq1 : ∀ v ∈ q, ‖v‖ ≤ 1)
+    (hxy : q.sum = ((n : ℂ) - 1) * ((x : ℂ) + (y : ℂ) * I)) :
+    (q.map (fun v => v.re)).sum = ((n : ℝ) - 1) * x ∧ x ^ 2 + y ^ 2 ≤ 1 := by
+  have hnR : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  have hn1 : (0 : ℝ) < (n : ℝ) - 1 := by linarith
+  have hnc : ‖((n : ℂ) - 1)‖ = (n : ℝ) - 1 := by
+    have hc : ((n : ℂ) - 1) = (((n : ℝ) - 1 : ℝ) : ℂ) := by push_cast; ring
+    rw [hc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (le_of_lt hn1)]
+  have hqcardR : ((q.card : ℕ) : ℝ) = (n : ℝ) - 1 := by
+    rw [hqcard]
+    push_cast [Nat.cast_sub (by omega : (1 : ℕ) ≤ n)]
+    ring
+  refine ⟨?_, ?_⟩
+  · have hc : ((n : ℂ) - 1) * ((x : ℂ) + (y : ℂ) * I)
+        = ((((n : ℝ) - 1) * x : ℝ) : ℂ) + ((((n : ℝ) - 1) * y : ℝ) : ℂ) * I := by
+      push_cast; ring
+    rw [sum_map_re, hxy, hc]
+    simp
+  · have hxynorm : ‖(x : ℂ) + (y : ℂ) * I‖ ^ 2 = x ^ 2 + y ^ 2 := by
+      rw [← Complex.normSq_eq_norm_sq, Complex.normSq_add_mul_I]
+    have h2 : ‖q.sum‖ ≤ (q.map (fun v => ‖v‖)).sum := by
+      have h := norm_sum_map_le q (fun v => v)
+      simpa using h
+    have h3 := sum_norm_le_card q hq1
+    rw [hqcardR] at h3
+    have h1 : ‖q.sum‖ ≤ (n : ℝ) - 1 := h2.trans h3
+    rw [hxy, norm_mul, hnc] at h1
+    have h4 : ‖(x : ℂ) + (y : ℂ) * I‖ ≤ 1 := by
+      by_contra hcon
+      rw [not_le] at hcon
+      nlinarith [h1, hn1]
+    nlinarith [hxynorm, h4, norm_nonneg ((x : ℂ) + (y : ℂ) * I)]
+
 /-! ### The origin inequality -/
 
 /-- **`(origin-exact)`.**  The origin channel, in the form the reduction consumes. -/
@@ -161,35 +197,7 @@ theorem origin_exact {n : ℕ} (hn : 5 ≤ n) {a x y α : ℝ} {z q : Multiset �
   have hnR : (5 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
   have hn1 : (0 : ℝ) < (n : ℝ) - 1 := by linarith
   have hnpos : (0 : ℝ) < (n : ℝ) := by linarith
-  have hnc : ‖((n : ℂ) - 1)‖ = (n : ℝ) - 1 := by
-    have hc : ((n : ℂ) - 1) = (((n : ℝ) - 1 : ℝ) : ℂ) := by push_cast; ring
-    rw [hc, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (le_of_lt hn1)]
-  have hqcardR : ((q.card : ℕ) : ℝ) = (n : ℝ) - 1 := by
-    rw [hqcard]
-    push_cast [Nat.cast_sub (by omega : (1 : ℕ) ≤ n)]
-    ring
-  -- `x` and `y` read off from `q.sum`
-  have hxre : (q.map (fun v => v.re)).sum = ((n : ℝ) - 1) * x := by
-    have hc : ((n : ℂ) - 1) * ((x : ℂ) + (y : ℂ) * I)
-        = ((((n : ℝ) - 1) * x : ℝ) : ℂ) + ((((n : ℝ) - 1) * y : ℝ) : ℂ) * I := by
-      push_cast; ring
-    rw [sum_map_re, hxy, hc]
-    simp
-  have hxynorm : ‖(x : ℂ) + (y : ℂ) * I‖ ^ 2 = x ^ 2 + y ^ 2 := by
-    rw [← Complex.normSq_eq_norm_sq, Complex.normSq_add_mul_I]
-  have hx2 : x ^ 2 + y ^ 2 ≤ 1 := by
-    have h2 : ‖q.sum‖ ≤ (q.map (fun v => ‖v‖)).sum := by
-      have h := norm_sum_map_le q (fun v => v)
-      simpa using h
-    have h3 := sum_norm_le_card q hq1
-    rw [hqcardR] at h3
-    have h1 : ‖q.sum‖ ≤ (n : ℝ) - 1 := h2.trans h3
-    rw [hxy, norm_mul, hnc] at h1
-    have h4 : ‖(x : ℂ) + (y : ℂ) * I‖ ≤ 1 := by
-      by_contra hcon
-      rw [not_le] at hcon
-      nlinarith [h1, hn1]
-    nlinarith [hxynorm, h4, norm_nonneg ((x : ℂ) + (y : ℂ) * I)]
+  obtain ⟨hxre, hx2⟩ := xy_bounds hn2 hqcard hq1 hxy
   have hxle : x ≤ 1 := by nlinarith [hx2, sq_nonneg y]
   -- the triangle inequality `(tri)` and the defect estimate
   have htri := one_le_tri hn2 hqcard hq0 hq1 (le_of_lt ha0) hxre hxy

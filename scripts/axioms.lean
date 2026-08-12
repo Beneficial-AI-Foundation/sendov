@@ -1,4 +1,5 @@
 import Sendov.Reduction.Main
+import Sendov.Interior
 
 /-!
 Run with `lake env lean scripts/axioms.lean`.  This file is deliberately *not* part of the
@@ -17,3 +18,4 @@ particular `sorryAx` must not appear, and neither must `Lean.ofReduceBool` (whic
 #print axioms Sendov.large_degree
 #print axioms Sendov.polar_origin_incompatible
 #print axioms Sendov.alpha_le_seventeen
+#print axioms Sendov.sendov_interior
