@@ -72,3 +72,4 @@ import Sendov.Analytic.OriginExact
 import Sendov.Analytic.LowDegree
 import Sendov.Interior
 import Sendov.Boundary
+import Sendov.Conjecture

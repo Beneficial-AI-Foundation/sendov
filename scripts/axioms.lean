@@ -1,6 +1,7 @@
 import Sendov.Reduction.Main
 import Sendov.Interior
 import Sendov.Boundary
+import Sendov.Conjecture
 
 /-!
 Run with `lake env lean scripts/axioms.lean`.  This file is deliberately *not* part of the
@@ -24,3 +25,5 @@ particular `sorryAx` must not appear, and neither must `Lean.ofReduceBool` (whic
 #print axioms Sendov.sendov_interior_real
 #print axioms Sendov.rubinstein_one
 #print axioms Sendov.sendov_boundary_one
+#print axioms Sendov.phelps_rodriguez
+#print axioms Sendov.sendov

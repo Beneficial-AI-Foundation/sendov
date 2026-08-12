@@ -79,6 +79,8 @@ still succeed — a fact that matters repeatedly below.
 | The centre `a = 0` | `Interior.lean` | proved |
 | **Conjecture `interior`, real `0 ≤ a < 1`** | **`Interior.lean`** | **proved** |
 | **Rubinstein at `a = 1`, with equality case** | **`Boundary.lean`** | **proved** |
+| Rotation normalization | `Conjecture.lean` | proved |
+| **Sendov + Phelps–Rodriguez, full** | **`Conjecture.lean`** | **proved** |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
 | Mutation test | `scripts/mutation_test.sh` | passes |
