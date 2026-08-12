@@ -61,3 +61,4 @@ import Sendov.Reduction.Stat
 import Sendov.Reduction.Simplified
 import Sendov.Reduction.Alpha17
 import Sendov.Reduction.Main
+import Sendov.Analytic.Maclaurin
