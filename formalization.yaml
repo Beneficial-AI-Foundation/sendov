@@ -39,14 +39,14 @@ sources:
   - title: "A digestion of the proof of Sendov's conjecture"
     authors: ["Terence Tao"]
     type: "web discussion"
-    identifier: "https://terrytao.wordpress.com/"
+    identifier: "https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/"
     relationship: formalizes
     note: >-
       The informal proof that this development formalizes, including its new
       proof of Rubinstein's boundary theorem. The formalization follows its
-      architecture closely and extends it from n >= 5 to n >= 2. At the time of
-      submission this is a blog post rather than an archived preprint; the
-      source text is sendov.tex and no more stable identifier exists yet.
+      architecture closely and extends it from n >= 5 to n >= 2. It is a
+      published blog post rather than an archived preprint; that URL is the
+      most stable identifier that exists for it.
 
   - title: "Research Problems in Function Theory (statement of Sendov's conjecture)"
     authors: ["W. K. Hayman"]

@@ -12,7 +12,7 @@ include Lean startup (~1.5–2 s) unless stated otherwise.
 
 ## 1. The claim
 
-From the blog post *A digestion of the proof of Sendov's conjecture*.  After the polynomial
+From the blog post [*A digestion of the proof of Sendov's conjecture*](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/).  After the polynomial
 argument, one inequality — equation `stat` — remains unproved on a finite range.  Writing
 `M = n-1`, `A = a² = 1 - 2α/M`, `c = 1 - α/M - α/(2(3+α))`, `Q(t) = 1 - 2ct + At²`,
 `B = α/(3+α)`, the claim is that

@@ -20,6 +20,9 @@ If every zero of a complex polynomial of degree `n ≥ 2` lies in the closed uni
 every zero `a` has a critical point within distance `1` — and within distance *strictly* less
 than `1`, unless `a` is on the unit circle and `p` is a scalar multiple of `zⁿ - aⁿ`.
 
+The informal proof being formalized is
+[*A digestion of the proof of Sendov's conjecture*](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/).
+
 Both are in [`Sendov/Conjecture.lean`](Sendov/Conjecture.lean#L83), and both depend on
 `propext`, `Classical.choice` and `Quot.sound` only.
 
@@ -192,7 +195,7 @@ the certificate files in batches.
 | [`docs/finite-range.md`](docs/finite-range.md) | the finite-range check on its own |
 | [`docs/proof-large-degree.md`](docs/proof-large-degree.md) | informal proof for degrees ≥ 101 |
 | [`docs/plan-*.md`](docs/) | the staged hand-off plans, with notes on where they were superseded |
-| [`docs/sendov-blog-post.tex`](docs/sendov-blog-post.tex) | source of the informal proof being formalized |
+| [the blog post](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/) | the informal proof being formalized |
 
 ## Provenance
 
