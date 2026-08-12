@@ -67,3 +67,4 @@ import Sendov.Counterexample.Factor
 import Sendov.Counterexample.Identities
 import Sendov.Analytic.Polar
 import Sendov.Analytic.Origin
+import Sendov.Analytic.Jsum
