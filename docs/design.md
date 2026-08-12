@@ -318,7 +318,7 @@ The chain, all links checked numerically and symbolically before any Lean was wr
 | `{lt} ⟹ {beta-bound}` | **proved**, `Sendov.beta_le` |
 | `{beta-bound}+{origin-exact} ⟹ {17}` | max of the bound is `1.817 < 2` at `n = 51, α = 17` |
 | `{origin-exact} ⟹ {1le}` | the mean-value step and the Beta identity confirmed |
-| `{1le}+{beta-bound} ⟹ {stat}` | the right side of `{1le}` is monotone in `β(1)`, no violations found |
+| `{1le}+{beta-bound} ⟹ {stat}` | **proved**, `Sendov.stat_of_one_le` |
 
 Three deliberate deviations from the write-up:
 

@@ -252,6 +252,23 @@ theorem integral_le_tail_gen {c A : ℝ} (hfeas : c ^ 2 ≤ A) (hc : 0 < c) (hc1
     nlinarith [mul_nonneg hBnn hsk]
   linarith
 
+/-- The integral is antitone in `c`: raising `c` lowers `QQ` pointwise on `[0,1]`.  Note that
+nonnegativity is only needed for the *larger* `c`; for the smaller one it comes free from the
+pointwise comparison.  (`Sendov.integral_anti` in `FiniteRange.Batch` is the same trick applied
+to the degree instead.) -/
+lemma integral_QQ_anti {c₁ c₂ A : ℝ} (hle : c₁ ≤ c₂) (hfeas : c₂ ^ 2 ≤ A) {r : ℝ} (hr : 0 ≤ r)
+    (k : ℕ) :
+    (∫ t in (0 : ℝ)..1, t ^ k * QQ c₂ A t ^ r)
+      ≤ ∫ t in (0 : ℝ)..1, t ^ k * QQ c₁ A t ^ r := by
+  refine intervalIntegral.integral_mono_on (by norm_num)
+    ((continuous_pow_mul_QQ c₂ A k hr).intervalIntegrable _ _)
+    ((continuous_pow_mul_QQ c₁ A k hr).intervalIntegrable _ _) ?_
+  intro u hu
+  refine mul_le_mul_of_nonneg_left ?_ (pow_nonneg hu.1 k)
+  refine Real.rpow_le_rpow (QQ_nonneg hfeas u) ?_ hr
+  simp only [QQ]
+  nlinarith [hu.1, hle]
+
 /-- The instance with weight `t`, used for `α ≤ 17`. -/
 theorem integral_le_tail_lin {c A : ℝ} (hfeas : c ^ 2 ≤ A) (hc : 0 < c) (hc1 : c ≤ 1)
     {r : ℝ} (hr : 0 < r) :

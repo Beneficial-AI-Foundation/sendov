@@ -72,22 +72,16 @@ private lemma nonneg_of_deriv {f g : ℝ → ℝ} (hd : ∀ z, HasDerivAt f (g z
     rw [(hd z).deriv]
     rw [interior_Ici] at hz
     exact hg z (le_of_lt hz)
-  have := hmono (mem_Ici.2 le_rfl) (mem_Ici.2 hy) hy
-  rwa [h0] at this
+  simpa [h0] using hmono (mem_Ici.2 le_rfl) (mem_Ici.2 hy) hy
 
 /-- `1 + y + y²/2 ≤ exp y` for `y ≥ 0`: three terms of the exponential series. -/
 private lemma quad_le_exp {y : ℝ} (hy : 0 ≤ y) : 1 + y + y ^ 2 / 2 ≤ exp y := by
-  have key : ∀ z : ℝ, 0 ≤ z → 0 ≤ exp z - 1 - z - z ^ 2 / 2 := by
-    intro z hz
-    refine nonneg_of_deriv (f := fun t => exp t - 1 - t - t ^ 2 / 2)
-      (g := fun t => exp t - 1 - t) (fun t => ?_) (by norm_num) (fun t ht => ?_) hz
-    · have h := (((hasDerivAt_exp t).sub_const 1).sub (hasDerivAt_id' t)).sub
-        ((hasDerivAt_pow 2 t).div_const 2)
-      refine h.congr_deriv ?_
-      norm_num
-    · have := add_one_le_exp t
-      linarith
-  linarith [key y hy]
+  suffices 0 ≤ exp y - 1 - y - y ^ 2 / 2 by linarith
+  refine nonneg_of_deriv (f := fun t => exp t - 1 - t - t ^ 2 / 2)
+    (g := fun t => exp t - 1 - t) (fun t => ?_) (by norm_num) (fun t ht => ?_) hy
+  · exact ((((hasDerivAt_exp t).sub_const 1).sub (hasDerivAt_id' t)).sub
+      ((hasDerivAt_pow 2 t).div_const 2)).congr_deriv (by norm_num)
+  · linarith [add_one_le_exp t]
 
 /-- The family closed under differentiation: `e^{2y} u(y) - e^y v(y) - w(y)` with `u`, `w`
 cubic and `v` quartic. -/
@@ -102,10 +96,8 @@ private lemma hasDerivAt_Sf (u₃ u₂ u₁ u₀ v₄ v₃ v₂ v₁ v₀ w₃ w
           v₄ (v₃ + 4 * v₄) (v₂ + 3 * v₃) (v₁ + 2 * v₂) (v₀ + v₁)
           0 (3 * w₃) (2 * w₂) w₁ y) y := by
   simp only [Sf]
-  have he2 : HasDerivAt (fun t : ℝ => exp (2 * t)) (exp (2 * y) * 2) y := by
-    have h := ((hasDerivAt_id' y).const_mul (2 : ℝ)).exp
-    refine h.congr_deriv ?_
-    ring
+  have he2 : HasDerivAt (fun t : ℝ => exp (2 * t)) (exp (2 * y) * 2) y :=
+    ((hasDerivAt_id' y).const_mul (2 : ℝ)).exp.congr_deriv (by ring)
   have he1 : HasDerivAt (fun t : ℝ => exp t) (exp y) y := hasDerivAt_exp y
   have hu : HasDerivAt (fun t : ℝ => u₃ * t ^ 3 + u₂ * t ^ 2 + u₁ * t + u₀)
       (3 * u₃ * y ^ 2 + 2 * u₂ * y + u₁) y := by
@@ -129,9 +121,7 @@ private lemma hasDerivAt_Sf (u₃ u₂ u₁ u₀ v₄ v₃ v₂ v₁ v₀ w₃ w
     refine h.congr_deriv ?_
     norm_num
     ring
-  have h := ((he2.mul hu).sub (he1.mul hv)).sub hw
-  refine h.congr_deriv ?_
-  ring
+  exact (((he2.mul hu).sub (he1.mul hv)).sub hw).congr_deriv (by ring)
 
 /-- The base of the induction, `Φ⁽⁸⁾ ≥ 0`.  Three terms of the exponential series leave a
 polynomial with every coefficient positive. -/
@@ -145,14 +135,10 @@ private lemma step8 (y : ℝ) (hy : 0 ≤ y) :
   have h2 : (0 : ℝ) ≤ 56 + 448 * y + 928 * y ^ 2 + 480 * y ^ 3 + 511 * y ^ 4 + 128 * y ^ 5 := by
     nlinarith [pow_nonneg hy 5, pow_nonneg hy 4, pow_nonneg hy 3, sq_nonneg y, hy]
   have h3 : (0 : ℝ) ≤ exp y * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560)
-      - (2504 + 1600 * y + 352 * y ^ 2 + 32 * y ^ 3 + 1 * y ^ 4) := by
-    nlinarith [h1, h2]
-  have hexp : exp (2 * y) = exp y * exp y := by rw [two_mul, exp_add]
-  have h4 := mul_nonneg (exp_pos y).le h3
-  calc (0 : ℝ) ≤ exp y * (exp y * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560)
-        - (2504 + 1600 * y + 352 * y ^ 2 + 32 * y ^ 3 + 1 * y ^ 4)) := h4
-    _ = Sf 256 512 (-512) 2560 1 32 352 1600 2504 0 0 0 0 y := by
-        simp only [Sf, hexp]
+      - (2504 + 1600 * y + 352 * y ^ 2 + 32 * y ^ 3 + 1 * y ^ 4) := by nlinarith
+  calc _ ≤ _ := mul_nonneg (exp_pos y).le h3
+    _ = _ := by
+        simp only [Sf, two_mul, exp_add]
         ring
 
 private lemma step7 (y : ℝ) (hy : 0 ≤ y) :
