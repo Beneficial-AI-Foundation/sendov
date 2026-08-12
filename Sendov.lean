@@ -64,3 +64,4 @@ import Sendov.Reduction.Main
 import Sendov.Analytic.Maclaurin
 import Sendov.Analytic.Defect
 import Sendov.Counterexample.Factor
+import Sendov.Counterexample.Identities
