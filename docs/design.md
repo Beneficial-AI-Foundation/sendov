@@ -61,8 +61,14 @@ still succeed — a fact that matters repeatedly below.
 | Degree monotonicity of `U` (B3) | `LargeDegree/Monotone.lean` | proved |
 | `Ut < 1`, degrees ≥ 101 (B4–B5) | `LargeDegree/Endgame.lean` | proved |
 | **The claim, every degree** | **`Main.lean`** | **proved** |
+| `(1Q) ⟹ (lt)` | `Reduction/Polar.lean` | proved |
+| `(lt) ⟹ (beta-bound)` | `Reduction/BetaBound.lean` | proved |
+| `(origin-exact) ⟹ (1le)` | `Reduction/Simplified.lean` | proved |
+| `(1le)+(beta-bound) ⟹ stat` | `Reduction/Stat.lean` | proved |
+| `⟹ α ≤ 17` | `Reduction/Alpha17.lean` | **open** |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
+| Mutation test | `scripts/mutation_test.sh` | passes |
 
 Degree 20 has been reproduced through the packed path and cross-checked against the
 multinomial route (`packed_agrees_twenty`), so the bridge is validated end to end.
@@ -320,13 +326,19 @@ The chain, all links checked numerically and symbolically before any Lean was wr
 | `{origin-exact} ⟹ {1le}` | **proved**, `Sendov.one_le_of_origin` |
 | `{1le}+{beta-bound} ⟹ {stat}` | **proved**, `Sendov.stat_of_one_le` |
 
-Three deliberate deviations from the write-up:
+Four deliberate deviations from the write-up:
 
 * **`{17}` uses the Beta identity, not `∫₀^∞ t e^{-ct} dt`.**  The chord bound `β(t) ≤ 1-axt`
   plus `∫₀^{1/c} t(1-ct)^s dt = 1/(c²(s+1)(s+2))` reuses `LargeDegree` machinery, avoids an
   improper integral, and improves the margin from `1.948` to `1.817`.
 * **Everything is non-strict.**  `{beta-bound}` is stated with `<`, but every downstream use
-  needs only `≤`, so no strict integral monotonicity is required anywhere.
+  needs only `≤`, so no strict integral monotonicity is required anywhere.  This removes the
+  need to argue that the integrand of `(lt)` is strictly smaller on a set of positive measure.
+* **The mean value theorem is replaced by Bernoulli.**  The write-up bounds
+  `((1-axt)² + s)^{(n-2)/2}` by the MVT.  Dividing `(P+Q)^p ≤ P^p + pQ(P+Q)^{p-1}` through by
+  `(P+Q)^p` turns it into `1 ≤ θ^p + p(1-θ)` at `θ = P/(P+Q)`, which is Mathlib's
+  `one_add_mul_self_le_rpow_one_add` verbatim — no derivative, no differentiability side
+  conditions.
 * **The `sinh` lemma is proved differently** — see below.
 
 ### The `sinh` lemma (`Common/Sinh.lean`), *done*
@@ -490,6 +502,44 @@ certificate.
   which is inert for the same trivial reason.)  `scripts/mutation_test.sh` therefore names the
   occurrence index, and a reviewer reading a generated file should know that the `have` block
   is bookkeeping, not evidence.
+
+* **`field_simp` distributes across an integral.**  In `Reduction/Simplified.lean` the goal
+  contained `∫₀¹ t³ β(t)^r dt` as an opaque atom multiplied by a rational coefficient.
+  `field_simp` cleared denominators *through* the atom, producing a goal `ring` could not
+  close and a several-hundred-character error that reads like a mismatch.  The fix is to
+  prove the scalar identity separately and finish with a division-free `ring`, so the atom is
+  only ever multiplied, never distributed over.  The same reflex applies to
+  `LargeDegree/Endgame.lean`, where `field_simp` on `D(1 - Ut)` produced a degree-115 identity
+  in place of the degree-58 one that was wanted.
+
+* **A true rewrite that breaks a later match.**  `ax = 1 - β(1)/2 - α/(n-1)` is an identity,
+  but `rw`-ing it into the origin inequality also rewrites the `a * x` *inside*
+  `∫₀¹ t β(t)^r dt`.  The integral is then a different atom from the one in the bound being
+  combined with it, and `linarith` fails with no indication why.  Passing the identity to
+  `linarith` as a hypothesis instead leaves the integral opaque.  General rule: when an
+  integral is being treated as an atom, rewrite *around* it, never *into* it.
+
+* **A section `variable` can shadow a global definition.**  `variable {c A t : ℝ}` in
+  `Common/Quadratic.lean` shadows `Sendov.c` and `Sendov.A`, so `Q n α t = QQ (c n α) (A n α) t`
+  stops parsing — and reports "Function expected", not a name clash.  Any lemma mentioning the
+  globals has to come before the `variable` line.
+
+* **`norm_num` normalises a fraction out of matchable shape.**  `1/(c²((r+1)(r+2)))` becomes
+  `(r+2)⁻¹(r+1)⁻¹(c²)⁻¹`, which no longer matches the lemma statement it came from.  Rewriting
+  only the specific cast that needs it (`show ((1:ℕ):ℝ) + 1 = 2`) is stable where
+  `norm_num at h` is not.
+
+* **`hasDerivAt_id` produces `id`, not `fun x => x`.**  `simpa` then normalises the goal into
+  point-free form (`(fun x ↦ exp x - 1) - id - …`) and fails to match.  `hasDerivAt_id'`
+  together with `HasDerivAt.congr_deriv` is the robust idiom; probe it in a scratch file
+  before generating 250 lines against it.
+
+* **The editor competes with the build for memory.**  Beyond the batch-file case above: with
+  `Common/Sinh.lean` open, the Lean LSP held 7.4 GB of 32 GB — it re-elaborates eight
+  13-parameter `HasDerivAt` steps on every keystroke — and `lake build` began failing
+  intermittently with `failed to read …olean.private` on *toolchain* files.  Same OOM, but it
+  looks like a corrupted install.  A retry loop gets through it; restarting the Lean server
+  fixes it properly.
 
 The habit that caught all of these: validate generated data against an *independent*
 computation — quadrature for moments, exact evaluation at several rational points for
