@@ -43,7 +43,7 @@ that expression it is well defined when some `sⱼ` vanishes. -/
 noncomputable def sumEraseProd (s : Multiset ℂ) : ℂ :=
   (s.map (fun j => (s.erase j).prod)).sum
 
-variable {n : ℕ} {a c : ℂ} {z q : Multiset ℂ}
+variable {n : ℕ} {a c : ℂ} {z q : Multiset ℂ} {p : ℂ[X]}
 
 /-! ### Two rewritings of the factorizations -/
 
@@ -231,5 +231,213 @@ lemma eval_eq_integral {p : ℂ[X]} {a : ℂ} (hpa : p.eval a = 0) (w : ℂ) :
   simp only [Complex.ofReal_one, Complex.ofReal_zero, zero_mul, add_zero, one_mul] at hFTC
   rw [show a + (w - a) = w from by ring, hpa, sub_zero] at hFTC
   rw [← hFTC, intervalIntegral.integral_const_mul]
+
+/-! ### The first origin identity -/
+
+open MeasureTheory in
+/-- **The first origin identity**, division-free.  The blog post's
+`(-1)^{n-1} ∏ zⱼ = (n / ∏ qⱼ) ∫₀¹ F(t) dt` with the denominator cleared, where
+`F(t) = ∏ⱼ (1 - a t qⱼ)`. -/
+theorem first_origin_identity {p : ℂ[X]} (hc0 : c ≠ 0) (ha0 : a ≠ 0)
+    (hzcard : z.card = n - 1) (hq0 : ∀ v ∈ q, v ≠ 0) (hpa : p.eval a = 0)
+    (hpz : p = C c * ((X - C a) * (z.map (fun w => X - C w)).prod))
+    (hpq : derivative p
+      = C ((n : ℂ) * c) * ((q.map (fun v => a - v⁻¹)).map (fun w => X - C w)).prod) :
+    (n : ℂ) * ∫ t in (0 : ℝ)..1, (q.map (fun v => 1 - a * (t : ℂ) * v)).prod
+      = (-1) ^ (n - 1) * q.prod * z.prod := by
+  -- `p(0)` through the integral representation
+  have hint : p.eval 0
+      = -a * ∫ t in (0 : ℝ)..1,
+          (n : ℂ) * c * (q.map (fun v => v⁻¹ - (t : ℂ) * a)).prod := by
+    rw [eval_eq_integral hpa 0]
+    congr 1
+    · ring
+    refine intervalIntegral.integral_congr ?_
+    intro t _
+    rw [hpq]
+    simp only [eval_mul, eval_C, eval_multiset_prod, Multiset.map_map]
+    congr 1
+    refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+    intro v _
+    simp only [Function.comp_apply, eval_sub, eval_X, eval_C]
+    ring
+  -- `p(0)` from the `z`-side
+  have hev : p.eval 0 = c * (-a) * ((-1) ^ (n - 1) * z.prod) := by
+    rw [hpz]
+    simp only [eval_mul, eval_C, eval_sub, eval_X, zero_sub]
+    rw [eval_prod_zero, hzcard]
+    ring
+  -- cancel `-a c` and clear the remaining denominator
+  rw [intervalIntegral.integral_const_mul] at hint
+  have hcancel : (n : ℂ) * ∫ t in (0 : ℝ)..1, (q.map (fun v => v⁻¹ - (t : ℂ) * a)).prod
+      = (-1) ^ (n - 1) * z.prod := by
+    have hne : -a * c ≠ 0 := by simp [ha0, hc0]
+    refine mul_left_cancel₀ hne ?_
+    linear_combination hint.symm.trans hev
+  calc (n : ℂ) * ∫ t in (0 : ℝ)..1, (q.map (fun v => 1 - a * (t : ℂ) * v)).prod
+      = (n : ℂ) * ∫ t in (0 : ℝ)..1,
+          (q.map (fun v => v⁻¹ - (t : ℂ) * a)).prod * q.prod := by
+        congr 1
+        refine intervalIntegral.integral_congr ?_
+        intro t _
+        simp only []
+        rw [prod_inv_sub_mul q hq0]
+        refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+        intro v _
+        ring
+    _ = ((n : ℂ) * ∫ t in (0 : ℝ)..1, (q.map (fun v => v⁻¹ - (t : ℂ) * a)).prod) * q.prod := by
+        rw [intervalIntegral.integral_mul_const]
+        ring
+    _ = ((-1) ^ (n - 1) * z.prod) * q.prod := by rw [hcancel]
+    _ = (-1) ^ (n - 1) * q.prod * z.prod := by ring
+
+/-! ### The polar identity -/
+
+/-- Pulling a constant out of a product over a multiset. -/
+lemma prod_map_mul_const (b : ℂ) (s : Multiset ℂ) (f : ℂ → ℂ) :
+    (s.map (fun v => b * f v)).prod = b ^ (Multiset.card s) * (s.map f).prod := by
+  induction s using Multiset.induction_on with
+  | empty => simp
+  | cons v t ih =>
+    simp only [Multiset.map_cons, Multiset.prod_cons, Multiset.card_cons, ih]
+    ring
+
+/-- `∏ⱼ (1/vⱼ) · ∏ⱼ vⱼ = 1`. -/
+lemma prod_inv_mul : ∀ (q : Multiset ℂ), (∀ v ∈ q, v ≠ 0) →
+    (q.map (fun v => v⁻¹)).prod * q.prod = 1 := by
+  intro q
+  induction q using Multiset.induction_on with
+  | empty => simp
+  | cons v t ih =>
+    intro hq
+    have hv : v ≠ 0 := hq v (Multiset.mem_cons_self v t)
+    have ht : ∀ w ∈ t, w ≠ 0 := fun w hw => hq w (Multiset.mem_cons_of_mem hw)
+    simp only [Multiset.map_cons, Multiset.prod_cons]
+    rw [← ih ht]
+    field_simp
+
+/-- **`p'(a)` two ways.**  `(∏ⱼ qⱼ) ∏ⱼ (a - zⱼ) = n`.  This is what makes the polar identity
+usable without dividing: it is the denominator of the blog post's
+`∏ⱼ (1-azⱼ)/(a-zⱼ)`, expressed as a product. -/
+theorem prod_sub_mul_prod (hc0 : c ≠ 0) (hq0 : ∀ v ∈ q, v ≠ 0)
+    (hpz : p = C c * ((X - C a) * (z.map (fun w => X - C w)).prod))
+    (hpq : derivative p
+      = C ((n : ℂ) * c) * ((q.map (fun v => a - v⁻¹)).map (fun w => X - C w)).prod) :
+    q.prod * (z.map (fun w => a - w)).prod = (n : ℂ) := by
+  have hev1 : (derivative p).eval a = (n : ℂ) * c * (q.map (fun v => v⁻¹)).prod := by
+    rw [hpq]
+    simp only [eval_mul, eval_C, eval_multiset_prod, Multiset.map_map]
+    congr 1
+    refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+    intro v _
+    simp only [Function.comp_apply, eval_sub, eval_X, eval_C]
+    ring
+  have hev2 : (derivative p).eval a = c * (z.map (fun w => a - w)).prod := by
+    rw [hpz, derivative_C_mul, derivative_mul, derivative_sub, derivative_X, derivative_C]
+    simp only [eval_mul, eval_C, eval_add, eval_sub, eval_X, sub_zero, sub_self, zero_mul,
+      add_zero, one_mul, eval_multiset_prod, Multiset.map_map]
+    congr 1
+    refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+    intro w _
+    simp
+  have hcancel : (z.map (fun w => a - w)).prod = (n : ℂ) * (q.map (fun v => v⁻¹)).prod := by
+    refine mul_left_cancel₀ hc0 ?_
+    linear_combination hev2.symm.trans hev1
+  calc q.prod * (z.map (fun w => a - w)).prod
+      = q.prod * ((n : ℂ) * (q.map (fun v => v⁻¹)).prod) := by rw [hcancel]
+    _ = (n : ℂ) * ((q.map (fun v => v⁻¹)).prod * q.prod) := by ring
+    _ = (n : ℂ) := by rw [prod_inv_mul q hq0]; ring
+
+open MeasureTheory in
+/-- **The polar identity**, division-free.  The blog post's
+`∏ⱼ (1-azⱼ)/(a-zⱼ) = ∫₀¹ ∏ⱼ (t(1-a²)qⱼ + a) dt` with the denominator cleared using
+`Sendov.prod_sub_mul_prod`. -/
+theorem polar_identity (hc0 : c ≠ 0) (ha0 : a ≠ 0) (ha2 : a ^ 2 ≠ 1)
+    (hzcard : z.card = n - 1) (hqcard : q.card = n - 1) (hq0 : ∀ v ∈ q, v ≠ 0)
+    (hpa : p.eval a = 0)
+    (hpz : p = C c * ((X - C a) * (z.map (fun w => X - C w)).prod))
+    (hpq : derivative p
+      = C ((n : ℂ) * c) * ((q.map (fun v => a - v⁻¹)).map (fun w => X - C w)).prod) :
+    q.prod * (z.map (fun w => 1 - a * w)).prod
+      = (n : ℂ) * ∫ t in (0 : ℝ)..1,
+          (q.map (fun v => a + (t : ℂ) * (1 - a ^ 2) * v)).prod := by
+  have hinv : a⁻¹ - a ≠ 0 := by
+    intro h
+    rw [sub_eq_zero] at h
+    apply ha2
+    field_simp at h
+    linear_combination -h
+  -- `p(1/a)` through the integral representation
+  have hint : p.eval a⁻¹
+      = (a⁻¹ - a) * ((n : ℂ) * c * ∫ t in (0 : ℝ)..1,
+          (q.map (fun v => (t : ℂ) * (a⁻¹ - a) + v⁻¹)).prod) := by
+    rw [eval_eq_integral hpa a⁻¹]
+    congr 1
+    have hcong : (∫ t in (0 : ℝ)..1, (derivative p).eval (a + (t : ℂ) * (a⁻¹ - a)))
+        = ∫ t in (0 : ℝ)..1,
+            (n : ℂ) * c * (q.map (fun v => (t : ℂ) * (a⁻¹ - a) + v⁻¹)).prod := by
+      refine intervalIntegral.integral_congr ?_
+      intro t _
+      simp only []
+      rw [hpq]
+      simp only [eval_mul, eval_C, eval_multiset_prod, Multiset.map_map]
+      congr 1
+      refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+      intro v _
+      simp only [Function.comp_apply, eval_sub, eval_X, eval_C]
+      ring
+    rw [hcong, intervalIntegral.integral_const_mul]
+  -- `p(1/a)` from the `z`-side
+  have hev : p.eval a⁻¹ = c * ((a⁻¹ - a) * (z.map (fun w => a⁻¹ - w)).prod) := by
+    rw [hpz]
+    simp only [eval_mul, eval_C, eval_sub, eval_X, eval_multiset_prod, Multiset.map_map]
+    congr 2
+    refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+    intro w _
+    simp
+  -- cancel `c (1/a - a)`
+  have hcancel : (z.map (fun w => a⁻¹ - w)).prod
+      = (n : ℂ) * ∫ t in (0 : ℝ)..1, (q.map (fun v => (t : ℂ) * (a⁻¹ - a) + v⁻¹)).prod := by
+    have hne : c * (a⁻¹ - a) ≠ 0 := mul_ne_zero hc0 hinv
+    refine mul_left_cancel₀ hne ?_
+    linear_combination hev.symm.trans hint
+  -- restore the two products
+  have hLHS : (z.map (fun w => 1 - a * w)).prod
+      = a ^ (n - 1) * (z.map (fun w => a⁻¹ - w)).prod := by
+    rw [← hzcard, ← prod_map_mul_const a z (fun w => a⁻¹ - w)]
+    refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+    intro w _
+    field_simp
+  have hRHS : ∀ t : ℝ, (q.map (fun v => a + (t : ℂ) * (1 - a ^ 2) * v)).prod
+      = a ^ (n - 1) * q.prod * (q.map (fun v => (t : ℂ) * (a⁻¹ - a) + v⁻¹)).prod := by
+    intro t
+    have h1 : (q.map (fun v => a + (t : ℂ) * (1 - a ^ 2) * v)).prod
+        = (q.map (fun v => a * (v * ((t : ℂ) * (a⁻¹ - a) + v⁻¹)))).prod := by
+      refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+      intro v hv
+      have hv0 : v ≠ 0 := hq0 v hv
+      field_simp
+      ring
+    rw [h1, prod_map_mul_const a q (fun v => v * ((t : ℂ) * (a⁻¹ - a) + v⁻¹)),
+      Multiset.prod_map_mul, hqcard]
+    have : (q.map (fun v => v)).prod = q.prod := by rw [Multiset.map_id']
+    rw [this]
+    ring
+  rw [hLHS]
+  calc q.prod * (a ^ (n - 1) * (z.map (fun w => a⁻¹ - w)).prod)
+      = a ^ (n - 1) * q.prod
+          * ((n : ℂ) * ∫ t in (0 : ℝ)..1,
+              (q.map (fun v => (t : ℂ) * (a⁻¹ - a) + v⁻¹)).prod) := by
+        rw [hcancel]; ring
+    _ = (n : ℂ) * ∫ t in (0 : ℝ)..1,
+          a ^ (n - 1) * q.prod * (q.map (fun v => (t : ℂ) * (a⁻¹ - a) + v⁻¹)).prod := by
+        rw [intervalIntegral.integral_const_mul]; ring
+    _ = (n : ℂ) * ∫ t in (0 : ℝ)..1,
+          (q.map (fun v => a + (t : ℂ) * (1 - a ^ 2) * v)).prod := by
+        congr 1
+        refine intervalIntegral.integral_congr ?_
+        intro t _
+        simp only []
+        rw [hRHS t]
 
 end Sendov

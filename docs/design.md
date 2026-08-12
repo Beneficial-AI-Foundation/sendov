@@ -70,6 +70,7 @@ still succeed — a fact that matters repeatedly below.
 | Maclaurin's inequality (top case) | `Analytic/Maclaurin.lean` | proved |
 | The defect lemma | `Analytic/Defect.lean` | proved |
 | The two factorizations | `Counterexample/Factor.lean` | proved |
+| The four identities (Lemma 1) | `Counterexample/Identities.lean` | proved |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
 | Mutation test | `scripts/mutation_test.sh` | passes |
@@ -619,6 +620,23 @@ certificate.
   the rewrite is one-directional and terminates.  `set` does not work here: it introduces a local
   definition that tactics unfold again — the same trap as in `Reduction/Alpha17.lean`, where it
   made `linarith` goals nonlinear.  `obtain … := ⟨_, rfl⟩` is the idiom in both cases.
+
+* **Truncated `ℕ` subtraction inside an exponent.**  Stating the derivative evaluation as
+  `(-1)^(card z - 1) * sumEraseProd z` is *wrong* at `card z = 1` and forces a case split at
+  `z = 0`, because `card z - 1` truncates.  Writing it as `-((-1)^(card z) * sumEraseProd z)` —
+  equal, since `((-1)^k)² = 1` — removes both, and the induction step closes by `ring`.
+
+* **`convert` manufacturing instance goals that `exact` does not.**  Composing `HasDerivAt`
+  across `ℝ → ℂ → ℂ` with `HasDerivAt.scomp` produces a derivative `f' • g'` and an
+  `AddCommGroup ℂ` instance that is not syntactically the ambient one.  `convert … using 1`
+  leaves both as goals; plain `exact` succeeds, because scalar multiplication of `ℂ` on `ℂ`
+  *is* multiplication definitionally.  Try `exact` before reaching for `convert`.
+
+* **`intervalIntegral.integral_congr` leaves a beta-redex.**  After `intro t _` the goal reads
+  `(fun t ↦ …) t = (fun t ↦ …) t`, and `rw` will not match inside it.  `simp only []` beta-reduces
+  and the rewrite then fires.  Relatedly, rewriting `← integral_const_mul` backwards leaves the
+  constant as a metavariable and the instance search gets stuck; state the congruence as its own
+  `have` and rewrite forwards.
 
 The habit that caught all of these: validate generated data against an *independent*
 computation — quadrature for moments, exact evaluation at several rational points for
