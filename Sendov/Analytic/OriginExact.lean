@@ -40,11 +40,6 @@ open Complex (I)
 
 /-! ### Scalar lemmas -/
 
-lemma sum_map_re (s : Multiset ℂ) : (s.map (fun v => v.re)).sum = s.sum.re := by
-  induction s using Multiset.induction_on with
-  | empty => simp
-  | cons v t ih => simp only [Multiset.map_cons, Multiset.sum_cons, Complex.add_re, ih]
-
 lemma sum_norm_le_card : ∀ (q : Multiset ℂ), (∀ v ∈ q, ‖v‖ ≤ 1) →
     (q.map (fun v => ‖v‖)).sum ≤ (q.card : ℝ) := by
   intro q

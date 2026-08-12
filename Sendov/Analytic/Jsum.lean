@@ -54,6 +54,11 @@ lemma sum_map_const_sub (s : Multiset ℂ) (c : ℂ) (g : ℂ → ℂ) :
     push_cast
     ring
 
+lemma sum_map_re (s : Multiset ℂ) : (s.map (fun v => v.re)).sum = s.sum.re := by
+  induction s using Multiset.induction_on with
+  | empty => simp
+  | cons v t ih => simp only [Multiset.map_cons, Multiset.sum_cons, Complex.add_re, ih]
+
 lemma norm_sum_map_le (s : Multiset ℂ) (f : ℂ → ℂ) :
     ‖(s.map f).sum‖ ≤ (s.map (fun w => ‖f w‖)).sum := by
   induction s using Multiset.induction_on with

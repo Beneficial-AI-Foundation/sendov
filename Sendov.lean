@@ -71,3 +71,4 @@ import Sendov.Analytic.Jsum
 import Sendov.Analytic.OriginExact
 import Sendov.Analytic.LowDegree
 import Sendov.Interior
+import Sendov.Boundary
