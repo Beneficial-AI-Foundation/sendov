@@ -300,6 +300,60 @@ different high-degree powers. Same degree, entirely different cost.
 
 ---
 
+## 6b. Next target: `{1Q}` and `{origin-exact}` are incompatible
+
+`stat` is now known infeasible for every `n ≥ 5`, `α ≤ 17`.  The blog post derives `stat` from
+the raw polar inequality `{1Q}` and the raw origin inequality `{origin-exact}`, and those two
+also force `α ≤ 17`, so the next target is that **`{1Q}` and `{origin-exact}` are not
+simultaneously satisfiable for `n ≥ 5`** — a statement with no complex numbers and no
+polynomials in it, in the real variables `a ∈ (0,1)` and `x ∈ [-1,1]` alone.
+
+The chain, all links checked numerically and symbolically before any Lean was written:
+
+| link | status of the check |
+|---|---|
+| `{1Q} ⟹ {lt}` | the pointwise bound `(at)` is an *identity* up to `t² ≤ t`: rhs − lhs = `(2α/(n−1))²(t−t²)` |
+| `{lt} ⟹ {beta-bound}` | integral identity and the `u ≤ √(h²+9)−3 ⟹ β ≤ α/(3+α)` algebra confirmed |
+| `{beta-bound}+{origin-exact} ⟹ {17}` | max of the bound is `1.817 < 2` at `n = 51, α = 17` |
+| `{origin-exact} ⟹ {1le}` | the mean-value step and the Beta identity confirmed |
+| `{1le}+{beta-bound} ⟹ {stat}` | the right side of `{1le}` is monotone in `β(1)`, no violations found |
+
+Three deliberate deviations from the write-up:
+
+* **`{17}` uses the Beta identity, not `∫₀^∞ t e^{-ct} dt`.**  The chord bound `β(t) ≤ 1-axt`
+  plus `∫₀^{1/c} t(1-ct)^s dt = 1/(c²(s+1)(s+2))` reuses `LargeDegree` machinery, avoids an
+  improper integral, and improves the margin from `1.948` to `1.817`.
+* **Everything is non-strict.**  `{beta-bound}` is stated with `<`, but every downstream use
+  needs only `≤`, so no strict integral monotonicity is required anywhere.
+* **The `sinh` lemma is proved differently** — see below.
+
+### The `sinh` lemma (`Common/Sinh.lean`), *done*
+
+`log(sinh h/h) ≤ √(h²+9) - 3` is the crux: it is what produces the constant `3` in
+`β(1) ≤ α/(3+α)`, and it is sharp — at `β = α/(3+α)` the slack in the integral inequality is
+`-α⁵/540 + α⁶/648`, so the bound is tight to *three* orders at `α = 0` and no lossy step is
+available.  The write-up proves it from the Taylor expansion
+`Σ_{k≥4} 2^{2k-3}(2k-1)(2k-6)²/(2k)! h^{2k}` (coefficients confirmed).
+
+Formalizing a series with nonnegative coefficients is unpleasant.  Instead, with
+`Φ(y) = e^{2y}(y³-10y²+36y-36) - e^y(y⁴+16y²-72) - (y³+10y²+36y+36)`:
+
+* `Φ(2h) = 16 e^{2h} G(h)`, `G(h) = h⁴sinh²h - (h²+9)(h cosh h - sinh h)²` — algebra only;
+* the family `e^{2y}u - e^y v - w` (`u`, `w` cubic, `v` quartic) is **closed under
+  differentiation**, via `u ↦ 2u+u'`, `v ↦ v+v'`, `w ↦ w'`, so one `HasDerivAt` lemma with 13
+  parameters covers all eight steps;
+* `Φ⁽ʲ⁾(0) = 0` for `j ≤ 7`, and
+  `Φ⁽⁸⁾(y) = 256e^{2y}(y³+2y²-2y+10) - e^y(y⁴+32y³+352y²+1600y+2504)`;
+* dividing `Φ⁽⁸⁾` by `e^y` and using **three** terms `e^y ≥ 1+y+y²/2` leaves
+  `128y⁵+511y⁴+480y³+928y²+448y+56`, every coefficient positive.
+
+So: no certificate, no series manipulation, one `ring` identity and eight applications of
+"vanishes at `0`, has nonnegative derivative".  The only analysis left is the limit
+`sinh h/h → 1` at `0⁺`, which is just the derivative of `sinh` at `0` read through
+`hasDerivAt_iff_tendsto_slope`.
+
+---
+
 ## 7. Open work
 
 Items 1–4 (packing bridge, degrees 9–100, composition, the analytic `n ≥ 101` argument) are

@@ -52,3 +52,4 @@ import Sendov.FiniteRange.Cover
 import Sendov.LargeDegree.Monotone
 import Sendov.LargeDegree.Endgame
 import Sendov.Main
+import Sendov.Common.Sinh
