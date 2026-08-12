@@ -69,4 +69,5 @@ import Sendov.Analytic.Polar
 import Sendov.Analytic.Origin
 import Sendov.Analytic.Jsum
 import Sendov.Analytic.OriginExact
+import Sendov.Analytic.LowDegree
 import Sendov.Interior

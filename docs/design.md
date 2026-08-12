@@ -75,7 +75,8 @@ still succeed — a fact that matters repeatedly below.
 | The error bound, `F'`, and `(tri)` | `Analytic/Origin.lean` | proved |
 | The defect estimate for `J ∑ 1/zⱼ` | `Analytic/Jsum.lean` | proved |
 | `(f1aq)`, `(grow)`, `(origin-exact)` | `Analytic/OriginExact.lean` | proved |
-| **Conjecture `interior`, real `a`, `n ≥ 5`** | **`Interior.lean`** | **proved** |
+| Low degrees `2 ≤ n ≤ 5` (branch at `(⋆)`) | `Analytic/LowDegree.lean` | proved |
+| **Conjecture `interior`, real `a`, `n ≥ 2`** | **`Interior.lean`** | **proved** |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
 | Mutation test | `scripts/mutation_test.sh` | passes |
