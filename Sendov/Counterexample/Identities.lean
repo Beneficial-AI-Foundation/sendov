@@ -28,7 +28,8 @@ formalized: no junk value of `0⁻¹` is ever evaluated.
 ## Main statements
 
 * `Sendov.sumEraseProd`: `∑ⱼ ∏_{k≠j} sₖ`, the division-free form of `(∏ s)(∑ 1/sⱼ)`;
-* `Sendov.centroid_identity`.
+* `Sendov.centroid_identity`;
+* `Sendov.second_origin_identity`.
 -/
 
 namespace Sendov
@@ -94,5 +95,104 @@ theorem centroid_identity (hn : 2 ≤ n) {p : ℂ[X]} (hc0 : c ≠ 0)
   rw [hp1, hp2] at hlink
   refine mul_left_cancel₀ hc0 ?_
   linear_combination hlink
+
+/-! ### The second origin identity -/
+
+@[simp] lemma sumEraseProd_zero : sumEraseProd 0 = 0 := by simp [sumEraseProd]
+
+open scoped Classical in
+/-- Splitting off one element, exactly as `Multiset.esymm` does at the top index. -/
+lemma sumEraseProd_cons (v : ℂ) (t : Multiset ℂ) :
+    sumEraseProd (v ::ₘ t) = t.prod + v * sumEraseProd t := by
+  simp only [sumEraseProd, Multiset.map_cons, Multiset.sum_cons, Multiset.erase_cons_head]
+  congr 1
+  rw [← Multiset.sum_map_mul_left]
+  refine congrArg Multiset.sum (Multiset.map_congr rfl ?_)
+  intro j hj
+  rw [Multiset.erase_cons_tail_of_mem hj, Multiset.prod_cons]
+
+/-- Negating a multiset before taking the product. -/
+lemma prod_map_neg (s : Multiset ℂ) :
+    (s.map (fun w => -w)).prod = (-1) ^ (Multiset.card s) * s.prod := by
+  induction s using Multiset.induction_on with
+  | empty => simp
+  | cons a t ih =>
+    simp only [Multiset.map_cons, Multiset.prod_cons, Multiset.card_cons, ih]
+    ring
+
+/-- `∏ⱼ (X - zⱼ)` at the origin. -/
+lemma eval_prod_zero (z : Multiset ℂ) :
+    ((z.map (fun w => X - C w)).prod).eval 0 = (-1) ^ (Multiset.card z) * z.prod := by
+  rw [eval_multiset_prod, Multiset.map_map]
+  rw [show (z.map ((fun r : ℂ[X] => r.eval 0) ∘ (fun w => X - C w))).prod
+      = (z.map (fun w => -w)).prod from
+    congrArg Multiset.prod (Multiset.map_congr rfl fun w _ => by simp)]
+  exact prod_map_neg z
+
+/-- The derivative of `∏ⱼ (X - zⱼ)` at the origin.  Proved by induction rather than through
+`Polynomial.derivative_prod`, which would need the evaluation of a multiset sum. -/
+lemma eval_deriv_prod_zero : ∀ (z : Multiset ℂ),
+    (derivative (z.map (fun w => X - C w)).prod).eval 0
+      = -((-1) ^ (Multiset.card z) * sumEraseProd z) := by
+  intro z
+  induction z using Multiset.induction_on with
+  | empty => simp
+  | cons v t ih =>
+    simp only [Multiset.map_cons, Multiset.prod_cons, derivative_mul, derivative_sub,
+      derivative_X, derivative_C, sub_zero, one_mul, eval_add, eval_mul, eval_sub, eval_X,
+      eval_C, zero_sub, Multiset.card_cons]
+    rw [ih, eval_prod_zero, sumEraseProd_cons]
+    ring
+
+/-- `∏ⱼ (1/vⱼ - a) · ∏ⱼ vⱼ = ∏ⱼ (1 - a vⱼ)`: clearing the denominators of the `q`-side. -/
+lemma prod_inv_sub_mul : ∀ (q : Multiset ℂ), (∀ v ∈ q, v ≠ 0) →
+    (q.map (fun v => v⁻¹ - a)).prod * q.prod = (q.map (fun v => 1 - a * v)).prod := by
+  intro q
+  induction q using Multiset.induction_on with
+  | empty => simp
+  | cons v t ih =>
+    intro hq
+    have hv : v ≠ 0 := hq v (Multiset.mem_cons_self v t)
+    have ht : ∀ w ∈ t, w ≠ 0 := fun w hw => hq w (Multiset.mem_cons_of_mem hw)
+    simp only [Multiset.map_cons, Multiset.prod_cons]
+    rw [← ih ht]
+    field_simp
+
+open scoped Classical in
+/-- **The second origin identity**, division-free.  The blog post's form
+`(-1)^{n-1}(∏ zⱼ)(1 + a ∑ 1/zⱼ) = (n/∏ qⱼ) F(1)` after clearing both denominators. -/
+theorem second_origin_identity {p : ℂ[X]} (hc0 : c ≠ 0)
+    (hzcard : z.card = n - 1) (hq0 : ∀ v ∈ q, v ≠ 0)
+    (hpz : p = C c * ((X - C a) * (z.map (fun w => X - C w)).prod))
+    (hpq : derivative p
+      = C ((n : ℂ) * c) * ((q.map (fun v => a - v⁻¹)).map (fun w => X - C w)).prod) :
+    (n : ℂ) * (q.map (fun v => 1 - a * v)).prod
+      = (-1) ^ (n - 1) * q.prod * (z.prod + a * sumEraseProd z) := by
+  -- `p'(0)` from the `q`-side
+  have hev1 : (derivative p).eval 0 = (n : ℂ) * c * (q.map (fun v => v⁻¹ - a)).prod := by
+    rw [hpq]
+    simp only [eval_mul, eval_C, eval_multiset_prod, Multiset.map_map]
+    congr 1
+    refine congrArg Multiset.prod (Multiset.map_congr rfl ?_)
+    intro v _
+    simp
+  -- `p'(0)` from the `z`-side
+  have hev2 : (derivative p).eval 0
+      = c * ((-1) ^ (n - 1) * (z.prod + a * sumEraseProd z)) := by
+    rw [hpz, derivative_C_mul, derivative_mul, derivative_sub, derivative_X, derivative_C]
+    simp only [eval_mul, eval_C, eval_add, eval_sub, eval_X, sub_zero, zero_sub, one_mul]
+    rw [eval_deriv_prod_zero, eval_prod_zero, hzcard]
+    ring
+  -- combine and clear the denominators
+  have hcancel : (n : ℂ) * (q.map (fun v => v⁻¹ - a)).prod
+      = (-1) ^ (n - 1) * (z.prod + a * sumEraseProd z) := by
+    refine mul_left_cancel₀ hc0 ?_
+    linear_combination hev1.symm.trans hev2
+  calc (n : ℂ) * (q.map (fun v => 1 - a * v)).prod
+      = (n : ℂ) * ((q.map (fun v => v⁻¹ - a)).prod * q.prod) := by
+        rw [prod_inv_sub_mul q hq0]
+    _ = ((n : ℂ) * (q.map (fun v => v⁻¹ - a)).prod) * q.prod := by ring
+    _ = ((-1) ^ (n - 1) * (z.prod + a * sumEraseProd z)) * q.prod := by rw [hcancel]
+    _ = (-1) ^ (n - 1) * q.prod * (z.prod + a * sumEraseProd z) := by ring
 
 end Sendov
