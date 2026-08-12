@@ -60,19 +60,19 @@ identity and eight applications of "vanishes at `0` and has nonnegative derivati
 
 namespace Sendov
 
-open Real
+open Real Set Filter
 
 /-- `f` vanishes at `0` and has nonnegative derivative on `[0,∞)`, hence is nonnegative there. -/
 private lemma nonneg_of_deriv {f g : ℝ → ℝ} (hd : ∀ z, HasDerivAt f (g z) z)
     (h0 : f 0 = 0) (hg : ∀ z, 0 ≤ z → 0 ≤ g z) {y : ℝ} (hy : 0 ≤ y) : 0 ≤ f y := by
-  have hmono : MonotoneOn f (Set.Ici 0) := by
+  have hmono : MonotoneOn f (Ici 0) := by
     refine monotoneOn_of_deriv_nonneg (convex_Ici 0)
       (fun z _ => (hd z).continuousAt.continuousWithinAt)
       (fun z hz => (hd z).differentiableAt.differentiableWithinAt) (fun z hz => ?_)
     rw [(hd z).deriv]
     rw [interior_Ici] at hz
     exact hg z (le_of_lt hz)
-  have := hmono (Set.mem_Ici.2 le_rfl) (Set.mem_Ici.2 hy) hy
+  have := hmono (mem_Ici.2 le_rfl) (mem_Ici.2 hy) hy
   rwa [h0] at this
 
 /-- `1 + y + y²/2 ≤ exp y` for `y ≥ 0`: three terms of the exponential series. -/
@@ -159,80 +159,57 @@ private lemma step7 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 128 64 (-320) 1440 1 28 268 1064 1440 0 0 0 0 y := by
   refine nonneg_of_deriv (g := Sf 256 512 (-512) 2560 1 32 352 1600 2504 0 0 0 0)
     (fun z => ?_) ?_ step8 hy
-  · have h := hasDerivAt_Sf 128 64 (-320) 1440 1 28 268 1064 1440 0 0 0 0 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 128 64 (-320) 1440 1 28 268 1064 1440 0 0 0 0 z).congr_deriv
+      (by grind [Sf])
   · simp only [Sf]
     norm_num
 private lemma step6 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 64 (-64) (-96) 768 1 24 196 672 768 0 0 0 0 y := by
   refine nonneg_of_deriv (g := Sf 128 64 (-320) 1440 1 28 268 1064 1440 0 0 0 0)
     (fun z => ?_) ?_ step7 hy
-  · have h := hasDerivAt_Sf 64 (-64) (-96) 768 1 24 196 672 768 0 0 0 0 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 64 (-64) (-96) 768 1 24 196 672 768 0 0 0 0 z).congr_deriv (by grind [Sf])
   · simp only [Sf]
     norm_num
 private lemma step5 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 32 (-80) 32 368 1 20 136 400 368 0 0 0 0 y := by
   refine nonneg_of_deriv (g := Sf 64 (-64) (-96) 768 1 24 196 672 768 0 0 0 0)
     (fun z => ?_) ?_ step6 hy
-  · have h := hasDerivAt_Sf 32 (-80) 32 368 1 20 136 400 368 0 0 0 0 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 32 (-80) 32 368 1 20 136 400 368 0 0 0 0 z).congr_deriv (by grind [Sf])
   · simp only [Sf]
     norm_num
 private lemma step4 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 16 (-64) 80 144 1 16 88 224 144 0 0 0 0 y := by
   refine nonneg_of_deriv (g := Sf 32 (-80) 32 368 1 20 136 400 368 0 0 0 0)
     (fun z => ?_) ?_ step5 hy
-  · have h := hasDerivAt_Sf 16 (-64) 80 144 1 16 88 224 144 0 0 0 0 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 16 (-64) 80 144 1 16 88 224 144 0 0 0 0 z).congr_deriv (by grind [Sf])
   · simp only [Sf]
     norm_num
 private lemma step3 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 8 (-44) 84 30 1 12 52 120 24 0 0 0 6 y := by
   refine nonneg_of_deriv (g := Sf 16 (-64) 80 144 1 16 88 224 144 0 0 0 0)
     (fun z => ?_) ?_ step4 hy
-  · have h := hasDerivAt_Sf 8 (-44) 84 30 1 12 52 120 24 0 0 0 6 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 8 (-44) 84 30 1 12 52 120 24 0 0 0 6 z).congr_deriv (by grind [Sf])
   · simp only [Sf]
     norm_num
 private lemma step2 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 4 (-28) 70 (-20) 1 8 28 64 (-40) 0 0 6 20 y := by
   refine nonneg_of_deriv (g := Sf 8 (-44) 84 30 1 12 52 120 24 0 0 0 6)
     (fun z => ?_) ?_ step3 hy
-  · have h := hasDerivAt_Sf 4 (-28) 70 (-20) 1 8 28 64 (-40) 0 0 6 20 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 4 (-28) 70 (-20) 1 8 28 64 (-40) 0 0 6 20 z).congr_deriv (by grind [Sf])
   · simp only [Sf]
     norm_num
 private lemma step1 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 2 (-17) 52 (-36) 1 4 16 32 (-72) 0 3 20 36 y := by
   refine nonneg_of_deriv (g := Sf 4 (-28) 70 (-20) 1 8 28 64 (-40) 0 0 6 20)
     (fun z => ?_) ?_ step2 hy
-  · have h := hasDerivAt_Sf 2 (-17) 52 (-36) 1 4 16 32 (-72) 0 3 20 36 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 2 (-17) 52 (-36) 1 4 16 32 (-72) 0 3 20 36 z).congr_deriv (by grind [Sf])
   · simp only [Sf]
     norm_num
 private lemma step0 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 1 (-10) 36 (-36) 1 0 16 0 (-72) 1 10 36 36 y := by
   refine nonneg_of_deriv (g := Sf 2 (-17) 52 (-36) 1 4 16 32 (-72) 0 3 20 36)
     (fun z => ?_) ?_ step1 hy
-  · have h := hasDerivAt_Sf 1 (-10) 36 (-36) 1 0 16 0 (-72) 1 10 36 36 z
-    refine h.congr_deriv ?_
-    simp only [Sf]
-    ring
+  · exact (hasDerivAt_Sf 1 (-10) 36 (-36) 1 0 16 0 (-72) 1 10 36 36 z).congr_deriv (by grind [Sf])
   · simp only [Sf]
     norm_num
 
@@ -241,11 +218,8 @@ private lemma Sf_eq (h : ℝ) :
     Sf 1 (-10) 36 (-36) 1 0 16 0 (-72) 1 10 36 36 (2 * h)
     = 16 * exp h ^ 2 * (h ^ 4 * sinh h ^ 2 - (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2) := by
   have hE : exp h ≠ 0 := (exp_pos h).ne'
-  have e4 : exp (2 * (2 * h)) = exp h ^ 4 := by
-    rw [show (2 : ℝ) * (2 * h) = h + h + h + h by ring, exp_add, exp_add, exp_add]
-    ring
-  have e2 : exp (2 * h) = exp h ^ 2 := by
-    rw [show (2 : ℝ) * h = h + h by ring, exp_add]; ring
+  have e4 : exp (2 * (2 * h)) = exp h ^ 4 := by simp [←exp_nat_mul]; ring
+  have e2 : exp (2 * h) = exp h ^ 2 := by simp [←exp_nat_mul]
   simp only [Sf, sinh_eq, cosh_eq, e4, e2, exp_neg]
   field_simp
   ring
@@ -256,8 +230,6 @@ theorem sinh_sq_le {h : ℝ} (hh : 0 ≤ h) :
   have h0 := step0 (2 * h) (by linarith)
   rw [Sf_eq] at h0
   have : (0 : ℝ) < 16 * exp h ^ 2 := by positivity
-  by_contra hc
-  push Not at hc
   nlinarith
 
 /-- `sinh h ≤ h cosh h` for `h ≥ 0`; equivalently `h cosh h - sinh h ≥ 0`, which is what makes
@@ -274,14 +246,12 @@ private lemma sinh_le_mul_cosh {h : ℝ} (hh : 0 ≤ h) : sinh h ≤ h * cosh h 
 the derivative inequality `coth h - 1/h ≤ h/√(h²+9)` cleared of denominators. -/
 theorem sqrt_mul_sub_le {h : ℝ} (hh : 0 ≤ h) :
     sqrt (h ^ 2 + 9) * (h * cosh h - sinh h) ≤ h ^ 2 * sinh h := by
-  have hd : (0 : ℝ) ≤ h * cosh h - sinh h := by linarith [sinh_le_mul_cosh hh]
   have : (0 : ℝ) ≤ h ^ 2 * sinh h := mul_nonneg (sq_nonneg h) (sinh_nonneg_iff.2 hh)
-  have hroot : sqrt (h ^ 2 + 9) ^ 2 = h ^ 2 + 9 := sq_sqrt (by positivity)
   have : (0 : ℝ) ≤ sqrt (h ^ 2 + 9) * (h * cosh h - sinh h) :=
-    mul_nonneg (sqrt_nonneg _) hd
+    mul_nonneg (sqrt_nonneg _) (by linarith [sinh_le_mul_cosh hh])
   have : (sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2 ≤ (h ^ 2 * sinh h) ^ 2 := by
     calc (sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2
-        = (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2 := by rw [mul_pow, hroot]
+        = (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2 := by rw [mul_pow, sq_sqrt (by positivity)]
       _ ≤ h ^ 4 * sinh h ^ 2 := sinh_sq_le hh
       _ = (h ^ 2 * sinh h) ^ 2 := by ring
   nlinarith
@@ -294,24 +264,15 @@ theorem log_sinh_div_le {h : ℝ} (hh : 0 < h) :
   have hderiv : ∀ z : ℝ, 0 < z →
       HasDerivAt ψ (z / sqrt (z ^ 2 + 9) - (cosh z / sinh z - 1 / z)) z := by
     intro z hz
-    have hs9 : (0 : ℝ) < z ^ 2 + 9 := by positivity
-    have hsq : sqrt (z ^ 2 + 9) ≠ 0 := by positivity
     have hsinh : sinh z ≠ 0 := ne_of_gt (sinh_pos_iff.2 hz)
-    have h1 : HasDerivAt (fun t : ℝ => sqrt (t ^ 2 + 9) - 3)
-        (z / sqrt (z ^ 2 + 9)) z := by
-      have h := (((hasDerivAt_pow 2 z).add_const 9).sqrt (ne_of_gt hs9)).sub_const 3
+    apply HasDerivAt.sub
+    · have h := (((hasDerivAt_pow 2 z).add_const 9).sqrt (ne_of_gt (by positivity))).sub_const 3
       refine h.congr_deriv ?_
       field_simp
       ring
-    have h2 : HasDerivAt (fun t : ℝ => log (sinh t) - log t)
-        (cosh z / sinh z - 1 / z) z := by
-      have ha := (hasDerivAt_sinh z).log hsinh
-      have hb := (hasDerivAt_id' z).log (ne_of_gt hz)
-      have h := ha.sub hb
-      refine h.congr_deriv ?_
-      field_simp
-    exact h1.sub h2
-  have hmono : MonotoneOn ψ (Set.Ioi 0) := by
+    · exact (((hasDerivAt_sinh z).log hsinh).sub
+        ((hasDerivAt_id' z).log (ne_of_gt hz))).congr_deriv (by field_simp)
+  have hmono : MonotoneOn ψ (Ioi 0) := by
     refine monotoneOn_of_deriv_nonneg (convex_Ioi 0)
       (fun z hz => (hderiv z hz).continuousAt.continuousWithinAt)
       (fun z hz => (hderiv z (by rwa [interior_Ioi] at hz)).differentiableAt.differentiableWithinAt)
@@ -326,37 +287,37 @@ theorem log_sinh_div_le {h : ℝ} (hh : 0 < h) :
     have := sqrt_mul_sub_le (le_of_lt hz0)
     nlinarith [this, hsq, hsinh, hz0]
   -- `ψ → 0` as `z → 0⁺`
-  have hslope : Filter.Tendsto (fun z : ℝ => sinh z / z) (nhdsWithin 0 {(0 : ℝ)}ᶜ) (nhds 1) := by
+  have hslope : Tendsto (fun z : ℝ => sinh z / z) (nhdsWithin 0 {(0 : ℝ)}ᶜ) (nhds 1) := by
     have h := hasDerivAt_sinh 0
     rw [hasDerivAt_iff_tendsto_slope] at h
     simpa [slope_fun_def, sinh_zero, cosh_zero, div_eq_inv_mul] using h
-  have hlog : Filter.Tendsto ψ (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
-    have hsub : nhdsWithin (0 : ℝ) (Set.Ioi 0) ≤ nhdsWithin 0 {(0 : ℝ)}ᶜ :=
+  have hlog : Tendsto ψ (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
+    have hsub : nhdsWithin (0 : ℝ) (Ioi 0) ≤ nhdsWithin 0 {(0 : ℝ)}ᶜ :=
       nhdsWithin_mono _ (fun z hz => ne_of_gt hz)
-    have h1 : Filter.Tendsto (fun z : ℝ => log (sinh z / z))
-        (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
+    have h1 : Tendsto (fun z : ℝ => log (sinh z / z))
+        (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
       have := (continuousAt_log one_ne_zero).tendsto.comp (hslope.mono_left hsub)
       simpa [Function.comp_def] using this
-    have h2 : Filter.Tendsto (fun z : ℝ => sqrt (z ^ 2 + 9) - 3)
-        (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
+    have h2 : Tendsto (fun z : ℝ => sqrt (z ^ 2 + 9) - 3)
+        (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
       have h9 : sqrt (9 : ℝ) = 3 := by
         rw [show (9 : ℝ) = 3 ^ 2 by norm_num, sqrt_sq (by norm_num : (0:ℝ) ≤ 3)]
       have hc : ContinuousAt (fun z : ℝ => sqrt (z ^ 2 + 9) - 3) 0 := by fun_prop
-      simpa [ContinuousWithinAt, h9] using hc.continuousWithinAt (s := Set.Ioi (0 : ℝ))
-    have heq : ∀ᶠ z : ℝ in nhdsWithin 0 (Set.Ioi 0),
+      simpa [ContinuousWithinAt, h9] using hc.continuousWithinAt (s := Ioi (0 : ℝ))
+    have heq : ∀ᶠ z : ℝ in nhdsWithin 0 (Ioi 0),
         ψ z = (sqrt (z ^ 2 + 9) - 3) - log (sinh z / z) := by
       filter_upwards [self_mem_nhdsWithin] with z hz
       have hz0 : (0 : ℝ) < z := hz
       rw [hψdef]
       rw [log_div (ne_of_gt (sinh_pos_iff.2 hz0)) (ne_of_gt hz0)]
-    rw [Filter.tendsto_congr' heq]
+    rw [tendsto_congr' heq]
     simpa using h2.sub h1
   -- combine
-  have hev : ∀ᶠ z : ℝ in nhdsWithin 0 (Set.Ioi 0), ψ z ≤ ψ h := by
-    have hmem : Set.Ioo (0 : ℝ) h ∈ nhdsWithin (0 : ℝ) (Set.Ioi 0) :=
-      mem_nhdsGT_iff_exists_Ioo_subset.2 (Exists.intro h (And.intro (Set.mem_Ioi.2 hh) subset_rfl))
+  have hev : ∀ᶠ z : ℝ in nhdsWithin 0 (Ioi 0), ψ z ≤ ψ h := by
+    have hmem : Ioo (0 : ℝ) h ∈ nhdsWithin (0 : ℝ) (Ioi 0) :=
+      mem_nhdsGT_iff_exists_Ioo_subset.2 (Exists.intro h (And.intro (mem_Ioi.2 hh) subset_rfl))
     filter_upwards [hmem] with z hz
-    exact hmono (Set.mem_Ioi.2 hz.1) (Set.mem_Ioi.2 hh) (le_of_lt hz.2)
+    exact hmono (mem_Ioi.2 hz.1) (mem_Ioi.2 hh) (le_of_lt hz.2)
   have h0 : (0 : ℝ) ≤ ψ h := le_of_tendsto hlog hev
   have hpos : (0 : ℝ) < sinh h / h := div_pos (sinh_pos_iff.2 hh) hh
   rw [hψdef] at h0
@@ -368,12 +329,9 @@ theorem sinh_le_mul_exp {h : ℝ} (hh : 0 ≤ h) :
     sinh h ≤ h * exp (sqrt (h ^ 2 + 9) - 3) := by
   rcases eq_or_lt_of_le hh with rfl | hpos
   · simp
-  · have hlog := log_sinh_div_le hpos
-    have hd : (0 : ℝ) < sinh h / h := div_pos (sinh_pos_iff.2 hpos) hpos
-    have := (log_le_iff_le_exp hd).1 hlog
-    calc sinh h = (sinh h / h) * h := by field_simp
-      _ ≤ exp (sqrt (h ^ 2 + 9) - 3) * h :=
-          mul_le_mul_of_nonneg_right this (le_of_lt hpos)
-      _ = h * exp (sqrt (h ^ 2 + 9) - 3) := by ring
+  · have hd : (0 : ℝ) < sinh h / h := div_pos (sinh_pos_iff.2 hpos) hpos
+    grw [← (log_le_iff_le_exp hd).1 (log_sinh_div_le hpos)]
+    field_simp
+    simp
 
 end Sendov

@@ -312,10 +312,10 @@ polynomials in it, in the real variables `a ∈ (0,1)` and `x ∈ [-1,1]` alone.
 
 The chain, all links checked numerically and symbolically before any Lean was written:
 
-| link | status of the check |
+| link | status |
 |---|---|
-| `{1Q} ⟹ {lt}` | the pointwise bound `(at)` is an *identity* up to `t² ≤ t`: rhs − lhs = `(2α/(n−1))²(t−t²)` |
-| `{lt} ⟹ {beta-bound}` | integral identity and the `u ≤ √(h²+9)−3 ⟹ β ≤ α/(3+α)` algebra confirmed |
+| `{1Q} ⟹ {lt}` | **proved**, `Sendov.polar_exp`.  The pointwise bound `(at)` is an *identity* up to `t² ≤ t`: rhs − lhs = `(2α/(n−1))²(t−t²)` |
+| `{lt} ⟹ {beta-bound}` | **proved**, `Sendov.beta_le` |
 | `{beta-bound}+{origin-exact} ⟹ {17}` | max of the bound is `1.817 < 2` at `n = 51, α = 17` |
 | `{origin-exact} ⟹ {1le}` | the mean-value step and the Beta identity confirmed |
 | `{1le}+{beta-bound} ⟹ {stat}` | the right side of `{1le}` is monotone in `β(1)`, no violations found |

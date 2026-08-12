@@ -54,3 +54,6 @@ import Sendov.LargeDegree.Monotone
 import Sendov.LargeDegree.Endgame
 import Sendov.Main
 import Sendov.Common.Sinh
+import Sendov.Reduction.Setup
+import Sendov.Reduction.Polar
+import Sendov.Reduction.BetaBound
