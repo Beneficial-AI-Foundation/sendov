@@ -66,3 +66,4 @@ import Sendov.Analytic.Defect
 import Sendov.Counterexample.Factor
 import Sendov.Counterexample.Identities
 import Sendov.Analytic.Polar
+import Sendov.Analytic.Origin
