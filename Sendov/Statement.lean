@@ -9,10 +9,16 @@ import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 /-!
 # The finite-range numerical claim in the proof of Sendov's conjecture
 
-This file states, with a `sorry`, the one numerical claim left open in the blog post
+This file fixes the notation of the one numerical claim left open in the blog post
 *A digestion of the proof of Sendov's conjecture*.  Nothing else from that post is
 formalized here: the polynomial argument that produces the claim is deliberately kept
 outside this file, so that the numerical statement can be audited on its own.
+
+The claim itself is `Sendov.finite_range`, stated and proved in `Sendov.FiniteRange.Cover`.
+It cannot be stated here, because every other file in the development imports this one for
+the definitions below; putting the claim at the bottom of the import graph would prevent it
+from being proved.  Auditing the statement therefore means reading this file for the
+definitions and `Sendov.FiniteRange.Cover` for the claim built from them.
 
 ## Background
 
@@ -38,10 +44,16 @@ which is exactly `Sendov.finite_range` below.
 
 ## Main statements
 
-* `Sendov.finite_range`: on the range above, `R n α < 1`.
+* `Sendov.M`, `Sendov.A`, `Sendov.c`, `Sendov.Q`, `Sendov.R`: the quantities of `stat`.
+
+The claim assembled from them lives in `Sendov.FiniteRange.Cover`:
+
+* `Sendov.finite_range`: on the range above, `R n α < 1`;
+* `Sendov.finite_range_le_100`: the same for `5 ≤ n ≤ 100`, which is what is actually
+  proved — the finite certification was pushed past `97` to meet the large-degree argument;
 * `Sendov.finite_range_contradiction`: consequently the post's equation `stat`,
   `1 ≤ R n α`, is contradictory on that range.  This is the form in which the claim is
-  applied; it is *derived* from `Sendov.finite_range`, so this file contains one `sorry`.
+  applied.
 
 ## Implementation notes
 
@@ -95,19 +107,8 @@ noncomputable def R (n : ℕ) (α : ℝ) : ℝ :=
     A n α ^ 2 * n * M n * ((n : ℝ) - 2) / (4 * (3 + α)) *
       ∫ t in (0 : ℝ)..1, t ^ 3 * Q n α t ^ (((n : ℝ) - 4) / 2)
 
-/-- **The finite-range claim.**  The right-hand side of equation `stat` of the blog post is
-strictly less than `1` on the range of degrees and of `α` left open there, that is, on
-`5 ≤ n ≤ 97`, `0 ≤ α ≤ 17`, subject to the feasibility constraint `c ^ 2 ≤ A`. -/
-theorem finite_range (n : ℕ) (α : ℝ) (hn : 5 ≤ n) (hn' : n ≤ 97)
-    (hα : 0 ≤ α) (hα' : α ≤ 17) (hfeas : c n α ^ 2 ≤ A n α) :
-    R n α < 1 := by
-  sorry
-
-/-- Equation `stat` of the blog post is infeasible on the remaining range
-`5 ≤ n ≤ 97`, `0 ≤ α ≤ 17`, `c ^ 2 ≤ A`.  This is the form in which the claim is used. -/
-theorem finite_range_contradiction (n : ℕ) (α : ℝ) (hn : 5 ≤ n) (hn' : n ≤ 97)
-    (hα : 0 ≤ α) (hα' : α ≤ 17) (hfeas : c n α ^ 2 ≤ A n α) (hstat : 1 ≤ R n α) :
-    False :=
-  absurd hstat (not_le.2 (finite_range n α hn hn' hα hα' hfeas))
+/-! The claim itself is stated and proved in `Sendov.FiniteRange.Cover`
+(`Sendov.finite_range`, `Sendov.finite_range_contradiction`).  It cannot live here: this file
+sits at the bottom of the import graph, since every other file needs these definitions. -/
 
 end Sendov

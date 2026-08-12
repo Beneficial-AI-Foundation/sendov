@@ -144,4 +144,44 @@ theorem integral_le_tail (hn : 2 ≤ n) (hα : 0 ≤ α) (hfeas : c n α ^ 2 ≤
     nlinarith [hBnn, hs4]
   linarith
 
+/-! ### The elementary upper bound `U`
+
+Everything after this point in the large-degree argument is an inequality in `α` and `n`
+alone; no integral survives. -/
+
+/-- The elementary bound replacing `Sendov.R`: `(11)` of the informal write-up, but with the
+sharper Beta constant `6/((r+1)(r+2)(r+3)(r+4))` in place of `6/r⁴`. -/
+noncomputable def U (n : ℕ) (α : ℝ) : ℝ :=
+  1 / 6 + 1 / (4 * (3 + α)) + 1 / (2 * M n) + 1 / (4 * M n * (3 + α))
+    + A n α ^ 2 * n * M n * ((n : ℝ) - 2) / (4 * (3 + α))
+      * (6 / (c n α ^ 4 *
+            ((((n : ℝ) - 4) / 2 + 1) * (((n : ℝ) - 4) / 2 + 2) * (((n : ℝ) - 4) / 2 + 3)
+              * (((n : ℝ) - 4) / 2 + 4)))
+        + (α / (3 + α)) ^ (((n : ℝ) - 4) / 2) / 4)
+
+/-- On the large-degree range `c` is bounded below, hence positive.  For `n ≥ 101` and
+`α ≤ 17` this gives `c ≥ 81/200`, which is `(3)` of the write-up. -/
+lemma c_ge_of_large (hn : 101 ≤ n) (hα : 0 ≤ α) (hα' : α ≤ 17) : 81 / 200 ≤ c n α := by
+  have hM : (100 : ℝ) ≤ M n := by
+    have : (101 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+    simp only [M]; linarith
+  have hM0 : (0 : ℝ) < M n := by linarith
+  have h3 : (0 : ℝ) < 3 + α := three_add_pos hα
+  simp only [c]
+  have h1 : α / M n ≤ 17 / 100 := by
+    rw [div_le_iff₀ hM0]
+    nlinarith
+  have h2 : α / (2 * (3 + α)) ≤ 17 / 40 := by
+    rw [div_le_iff₀ (by positivity : (0:ℝ) < 2 * (3 + α))]
+    nlinarith
+  linarith
+
+/-- **`R` is bounded by the elementary expression `U`.**  This is the bridge out of
+integration: from here the large-degree argument is elementary. -/
+theorem R_le_U (hn : 5 ≤ n) (hα : 0 ≤ α) (hfeas : c n α ^ 2 ≤ A n α) (hc : 0 < c n α) :
+    R n α ≤ U n α := by
+  have hnR : (5 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+  have hr : (0 : ℝ) < ((n : ℝ) - 4) / 2 := by linarith
+  exact R_le_of_integral_le (by omega) hα (integral_le_tail (by omega) hα hfeas hc hr)
+
 end Sendov

@@ -7,7 +7,7 @@ between these files, and a reviewer should know which is which.
 |---|---|---|
 | [`design.md`](design.md) | This project's own design record: what is proved, what is open, why the architecture is what it is, and the measured costs behind each decision. | Maintained. Measurements reproducible; claims about the Lean development are checkable against the source. |
 | [`plan-finite-range.md`](plan-finite-range.md) | The original hand-off plan for formalizing the finite range, written before any code existed. | **External, superseded in parts.** See below. |
-| [`proof-large-degree.md`](proof-large-degree.md) | An informal but formalization-ready proof that `stat` is impossible for `n > 100`, plus (in its §9) speculative strategies for lowering the finite cutoff. | **External, not yet formalized.** Its §1–8 arithmetic has been checked; its §9 is explicitly labelled unproved by its author. |
+| [`proof-large-degree.md`](proof-large-degree.md) | An informal but formalization-ready proof that `stat` is impossible for `n > 100`, plus (in its §9) speculative strategies for lowering the finite cutoff. | **External. Formalized in outline, not in detail** — see below. Its §9 is explicitly labelled unproved by its author. |
 | [`sendov-blog-post.tex`](sendov-blog-post.tex) | Source of the blog post the claim comes from. `stat` is the equation being formalized. | Draft, unpublished. **To do:** once the post is live, replace this file with a link to it. |
 
 ## Where the plan has been superseded
@@ -30,6 +30,25 @@ reader does not follow them by mistake:
 
 What the plan gets right and should be kept: the trust policy (§7), the insistence that the
 integral replacement be proved rather than assumed, and the acceptance criteria (§10).
+
+## Where `proof-large-degree.md` has been superseded
+
+Its §1–3 are formalized as written (`LargeDegree/Beta.lean`, `LargeDegree/Tail.lean`).  Its
+§4–§7 are formalized in outline only, because using the sharp Beta constant
+`6/((r+1)(r+2)(r+3)(r+4))` in place of the write-up's `6/r⁴` changes what needs proving:
+
+- **§4.1 and its degree-8 certificate (17)–(18) are not needed.**  With the sharp constant the
+  `n(n-2)` cancels and the first tail term is a rational function of `n`.
+- **(16) is not true as stated.**  The first tail term does not decrease with `n` on its own —
+  at `α = 17` it rises by 0.37% up to `n ≈ 108`.  It is the `c⁴` in the denominator that makes
+  the product decrease.  `Monotone.lean` takes a flat 1% allowance instead and certifies it.
+- **§4.2 is kept**, but with `√B ≤ 12/13` (a rational bound) so nothing irrational enters the
+  step ratio, and with `B^((n-4)/2)` rewritten as the natural power `(√B)^(n-4)`.
+- **§7's split of `[0,17]` at `α = 16` is unnecessary.**  One degree-58 Bernstein certificate
+  covers the whole range, with all 59 coefficients positive.  The tight `T̃₂(17) = 0.55719`
+  against `279/500` (0.15% of room) does not arise; the margin at `α = 17` is 7.7%.
+
+See `design.md` §7 for the details.
 
 ## Note on §9 of `proof-large-degree.md`
 

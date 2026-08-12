@@ -77,20 +77,38 @@ lemma Q_one (hn : 2 ≤ n) (hα : 0 ≤ α) : Q n α 1 = α / (3 + α) := by
   ring
 
 /-- `Q` is convex with `Q 0 = 1` and `Q 1 = B ≤ 1`, hence bounded by `1` on `[0,1]`.
-Needed only for the odd-degree square-root bound. -/
-lemma Q_le_one (hn : 2 ≤ n) (hα : 0 ≤ α) (hfeas : c n α ^ 2 ≤ A n α)
+
+Only `0 ≤ c` is needed, not `0 ≤ A`: writing `Q t - 1 = t (A t - 2c)`, the identity
+`Q 1 = B < 1` gives `A ≤ 2c` outright, and then `A t ≤ 2c` holds whether `A` is nonnegative
+(as `A t ≤ A`) or negative (as `A t ≤ 0 ≤ 2c`).  That matters for batches of degrees whose
+`α`-range reaches past `(n₀-1)/2`, where `A n₀ α` can be negative. -/
+lemma Q_le_one (hn : 2 ≤ n) (hα : 0 ≤ α) (hc : 0 ≤ c n α)
     (ht0 : 0 ≤ t) (ht1 : t ≤ 1) : Q n α t ≤ 1 := by
-  have hA : 0 ≤ A n α := A_nonneg hfeas
   have hB : Q n α 1 ≤ 1 := by
     rw [Q_one hn hα, div_le_one (three_add_pos hα)]
     linarith
   have hAc : A n α - 2 * c n α ≤ 0 := by
     simp only [Q] at hB
     linarith
-  have h4 : A n α * t ≤ A n α := mul_le_of_le_one_right hA ht1
-  have h5 : A n α * t - 2 * c n α ≤ 0 := by linarith
+  have h5 : A n α * t - 2 * c n α ≤ 0 := by
+    rcases le_total 0 (A n α) with h | h
+    · nlinarith [mul_le_of_le_one_right h ht1]
+    · nlinarith [mul_nonneg ht0 (neg_nonneg.2 h)]
   simp only [Q]
   nlinarith [mul_nonneg ht0 (neg_nonneg.2 h5)]
+
+/-- Feasibility gives `α ≤ (n-1)/2`, and hence `c ≥ (1-B)/2 > 0`. -/
+lemma c_pos_of_le_half_M (hn : 2 ≤ n) (hα : 0 ≤ α) (hhalf : α ≤ M n / 2) : 0 < c n α := by
+  have hM : 0 < M n := M_pos hn
+  have h3 : (0 : ℝ) < 3 + α := three_add_pos hα
+  have h1 : α / M n ≤ 1 / 2 := by
+    rw [div_le_div_iff₀ hM (by norm_num)]
+    linarith
+  have h2 : α / (2 * (3 + α)) < 1 / 2 := by
+    rw [div_lt_div_iff₀ (by positivity) (by norm_num)]
+    linarith
+  simp only [c]
+  linarith
 
 /-- The coefficient multiplying the integral in `Sendov.R` is nonnegative, so any upper
 bound for the integral yields an upper bound for `R`.  This is how each degree replaces its

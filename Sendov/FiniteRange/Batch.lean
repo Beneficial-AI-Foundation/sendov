@@ -103,7 +103,7 @@ lemma rpow_le_rpow_exponent_ge' {x y z : ℝ} (hx0 : 0 ≤ x) (hx1 : x ≤ 1) (h
 
 /-- The moment decreases with the degree: `Q` falls and the exponent rises. -/
 theorem integral_anti {m n : ℕ} (hm : 5 ≤ m) (h : m ≤ n) (hα : 0 ≤ α)
-    (hfm : c m α ^ 2 ≤ A m α) (hfn : c n α ^ 2 ≤ A n α) :
+    (hcm : 0 ≤ c m α) (hfn : c n α ^ 2 ≤ A n α) :
     (∫ t in (0 : ℝ)..1, t ^ 3 * Q n α t ^ (((n : ℝ) - 4) / 2))
       ≤ ∫ t in (0 : ℝ)..1, t ^ 3 * Q m α t ^ (((m : ℝ) - 4) / 2) := by
   have hm2 : 2 ≤ m := by omega
@@ -119,17 +119,25 @@ theorem integral_anti {m n : ℕ} (hm : 5 ≤ m) (h : m ≤ n) (hα : 0 ≤ α)
   obtain ⟨ht0, ht1⟩ := ht
   refine mul_le_mul_of_nonneg_left ?_ (pow_nonneg ht0 3)
   have hQn : 0 ≤ Q n α t := Q_nonneg hfn t
-  have hQm1 : Q m α t ≤ 1 := Q_le_one hm2 hα hfm ht0 ht1
+  have hmono : Q n α t ≤ Q m α t := Q_anti hm2 h hα ht0 ht1
+  -- nonnegativity at `m` comes free from monotonicity, so feasibility at `m` is not needed
+  have hQm0 : 0 ≤ Q m α t := le_trans hQn hmono
+  have hQm1 : Q m α t ≤ 1 := Q_le_one hm2 hα hcm ht0 ht1
   have hstep1 : Q n α t ^ (((n : ℝ) - 4) / 2) ≤ Q m α t ^ (((n : ℝ) - 4) / 2) :=
-    Real.rpow_le_rpow hQn (Q_anti hm2 h hα ht0 ht1) hen
+    Real.rpow_le_rpow hQn hmono hen
   have hstep2 : Q m α t ^ (((n : ℝ) - 4) / 2) ≤ Q m α t ^ (((m : ℝ) - 4) / 2) :=
-    rpow_le_rpow_exponent_ge' (Q_nonneg hfm t) hQm1 hem (by linarith)
+    rpow_le_rpow_exponent_ge' hQm0 hQm1 hem (by linarith)
   linarith
 
 /-- **The batch bound.**  One evaluation covers every degree in `[n₀, n₁]`: the elementary
-part and the moment at `n₀`, the prefactor at `n₁`. -/
+part and the moment at `n₀`, the prefactor at `n₁`.
+
+Only `0 ≤ c n₀ α` is required at `n₀`, not feasibility.  That matters: feasibility propagates
+*upward* in `n`, so it could not be inherited from the hypothesis at `n`, and for `n₀ < 36` it
+does not follow from `α ≤ 17` either.  Nonnegativity of `Q` at `n₀` instead comes free from
+`Q_anti`, since `Q n₀ ≥ Q n ≥ 0`. -/
 theorem R_le_batch {n₀ n n₁ : ℕ} (h0 : 5 ≤ n₀) (h1 : n₀ ≤ n) (h2 : n ≤ n₁) (hα : 0 ≤ α)
-    (hf0 : c n₀ α ^ 2 ≤ A n₀ α) (hfn : c n α ^ 2 ≤ A n α) :
+    (hc0 : 0 ≤ c n₀ α) (hfn : c n α ^ 2 ≤ A n α) :
     R n α ≤ 1 / 6 + 1 / (4 * (3 + α)) + 1 / (2 * M n₀) + 1 / (4 * M n₀ * (3 + α))
       + A n₁ α ^ 2 * n₁ * M n₁ * ((n₁ : ℝ) - 2) / (4 * (3 + α))
         * ∫ t in (0 : ℝ)..1, t ^ 3 * Q n₀ α t ^ (((n₀ : ℝ) - 4) / 2) := by
@@ -169,7 +177,7 @@ theorem R_le_batch {n₀ n n₁ : ℕ} (h0 : 5 ≤ n₀) (h1 : n₀ ≤ n) (h2 :
     rw [div_le_div_iff_of_pos_right hc]
     exact e3
   -- the moment decreases
-  have hI := integral_anti (m := n₀) (n := n) h0 h1 hα hf0 hfn
+  have hI := integral_anti (m := n₀) (n := n) h0 h1 hα hc0 hfn
   have hInn : 0 ≤ ∫ t in (0 : ℝ)..1, t ^ 3 * Q n α t ^ (((n : ℝ) - 4) / 2) := by
     apply intervalIntegral.integral_nonneg (by norm_num)
     intro u hu

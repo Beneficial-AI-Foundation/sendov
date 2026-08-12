@@ -69,8 +69,11 @@ def build(n0, n1):
     p = dens.degree(); const = sp.Integer(dens.all_coeffs()[0])
     assert sp.expand(dens.as_expr() - const*(3+a)**p) == 0
     d = nums.degree()
-    G = [sum(cf[i]*comb(d-i,j-i)*17**i for i in range(j+1)) for j in range(d+1)]
-    assert all(g>0 for g in G), "Bernstein certificate not all-positive"
+    # feasibility caps alpha at (n-1)/2 for each n in the batch, so the certificate lives on
+    # [0, min(17, (n1-1)/2)] -- using 17 unconditionally is wrong at low degree
+    Uf = min(sp.Rational(17), sp.Rational(n1-1, 2)); up, uq = Uf.p, Uf.q
+    G = [sum(cf[i]*uq**(j-i)*comb(d-i,j-i)*up**i for i in range(j+1)) for j in range(d+1)]
+    assert all(g>0 for g in G), f"Bernstein certificate not all-positive on [0,{Uf}]"
     def ev(cs,x):
         s=sp.Integer(0)
         for c in reversed(cs): s=c+x*s
@@ -85,7 +88,7 @@ def build(n0, n1):
           f"tau={tau.bit_length()}b G^k={X.bit_length()}b  ALL CHECKS PASS")
     return dict(n0=n0,n1=n1,k=k,M0=M0,M1=M1,L=L,beta=beta,tau=tau,Nmom=Nmom,mlen=mlen,
                 cf=cf,G=G,d=d,const=const,p=p,feas=feas.all_coeffs()[::-1],
-                cnum=cnum.all_coeffs()[::-1])
+                cnum=cnum.all_coeffs()[::-1],up=up,uq=uq)
 if __name__ == "__main__":
     import pickle
     r = build(int(sys.argv[1]), int(sys.argv[2]))

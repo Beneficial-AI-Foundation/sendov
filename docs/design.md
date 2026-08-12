@@ -38,26 +38,51 @@ still succeed — a fact that matters repeatedly below.
 
 | component | file | state |
 |---|---|---|
-| Claim statement | `Statement.lean` | 1 `sorry` (the goal) |
+| Definitions of `stat` | `Statement.lean` | definitions only |
+| **The claim, degrees 5–100** | **`FiniteRange/Cover.lean`** | **proved** |
 | Basic properties (shared A/B) | `Common/Basic.lean` | proved |
 | Real powers, integrability (shared A/B) | `Common/Rpow.lean` | proved |
 | Moment formula (M) | `FiniteRange/Moments.lean` | proved |
 | Odd-degree bound | `FiniteRange/OddBound.lean` | proved |
 | Per-degree reduction | `FiniteRange/Reduce.lean` | proved |
-| Degrees 5, 6, 7, 8, 20 | `FiniteRange/Degree*.lean` | proved, no `sorryAx` |
+| Batching machinery | `FiniteRange/Batch.lean` | proved |
+| Degrees 5, 6, 7, 8, 20 (single) | `FiniteRange/Degree*.lean` | proved, no `sorryAx` |
+| 31 degree batches covering 6–100 | `FiniteRange/Degree{n₀}_{n₁}.lean` | proved |
 | Moment recurrence | `FiniteRange/Recurrence.lean` | proved; too slow to use (§4) |
 | Kronecker packing core | `FiniteRange/Pack.lean` | proved |
 | Packing bridge | `FiniteRange/PackBridge.lean` | proved |
 | Degree 20 via packing | `FiniteRange/Degree20Packed.lean` | proved, cross-checked |
 | Degree 53 moment via packing | `FiniteRange/Degree53Packed.lean` | proved, 10 s |
 | Degree 97 moments (k = 46, 47) | `FiniteRange/Degree97Packed.lean` | proved, 17 s |
-| Beta integral (n ≥ 98) | `LargeDegree/Beta.lean` | proved |
-| Certificate generator | `scripts/gen_degree.py` | untrusted, self-checking |
+| Beta integral (B1) | `LargeDegree/Beta.lean` | proved |
+| Tail bound `R ≤ U` (B2) | `LargeDegree/Tail.lean` | proved |
+| Degree monotonicity of `U` (B3) | `LargeDegree/Monotone.lean` | proved |
+| `Ut < 1`, degrees ≥ 101 (B4–B5) | `LargeDegree/Endgame.lean` | proved |
+| **The claim, every degree** | **`Main.lean`** | **proved** |
+| Certificate generators | `scripts/*.py` | untrusted, self-checking |
+| Trust audit | `scripts/audit.sh` | passes |
 
-Degree 20 has now been reproduced through the packed path and cross-checked against the
+Degree 20 has been reproduced through the packed path and cross-checked against the
 multinomial route (`packed_agrees_twenty`), so the bridge is validated end to end.
 
-Open: degrees 9–97, and the analytic `n ≥ 98` argument beyond its Beta core.
+**The claim is proved.**  `Sendov.stat_lt_one` gives `R n α < 1` for **every** `n ≥ 5` and
+`0 ≤ α ≤ 17` under feasibility, so `Sendov.stat_contradiction` shows equation `stat` of the
+blog post is unsatisfiable outright — there is no longer any range left open.  `scripts/audit.sh`
+reports no forbidden tokens and
+
+```
+'Sendov.stat_lt_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+**The A track.**  `Sendov.finite_range_le_100` proves `R n α < 1` for every
+`5 ≤ n ≤ 100`, `0 ≤ α ≤ 17` under feasibility, and `Sendov.finite_range` is the original
+`n ≤ 97` challenge statement as a special case.  Coverage is not asserted anywhere: the case
+split in `Cover.lean` is generated from the batch plan and would not compile if a degree were
+skipped.  Three degrees beyond the original `97` were certified so that the finite range
+meets the large-degree argument with room to spare (`U` has margin `0.122` at `n = 101`
+against `0.048` at `n = 98`).
+
+The seam is at `100/101`, not the blog post's `97/98`.
 
 The hypotheses are all derivable by arithmetic rather than by computing `qrow`: coefficient
 size from `l1row_qrow`, entry length from `qrow_entry_length_le` (an entry of the `k`-th row
@@ -277,21 +302,42 @@ different high-degree powers. Same degree, entirely different cost.
 
 ## 7. Open work
 
-1. **Packing bridge.** Signed coefficients: *done* — `unpackZ_pevZ` recovers a `ℤ`-polynomial
-   from its packed value by balanced-digit extraction, under `2|c| < b`.  Still to do:
-   connect the packed computation to `qrow`/`rev` so `integral_moment_of` applies unchanged,
-   and assemble the moment `Σⱼ R(k,j)/(j+4)`.
-2. **Degrees 9–97**, generated and checked; validate each new path against an
-   already-proved degree before bulk generation.
-3. **Composition** of 93 degrees into `finite_range` — a balanced dispatch tree, not one
-   `interval_cases`.
-4. **Analytic `n ≥ 98`**: the tail assembly, discrete monotonicity in `n`, the reduction at
-   `n = 101`, `α`-monotonicity, and the endpoint estimates. Its arithmetic has been verified
-   externally (the degree-8 expansion, the SOS identity, all six endpoint estimates); the
-   tightest is `T̃₂(17) = 0.55719` against `279/500`, 0.15% of room, so that step must use the
-   exact rational.
-5. **Audit**: `#print axioms`, forbidden-token grep, clean rebuild from the pinned toolchain,
-   and a mutation test — corrupt one certificate coefficient and confirm the build fails.
+Items 1–4 (packing bridge, degrees 9–100, composition, the analytic `n ≥ 101` argument) are
+all **done**; see §2.  What remains is assurance work, not mathematics:
+
+1. **Mutation test** — corrupt one certificate coefficient and confirm the build fails.  This
+   is the check that the certificates are load-bearing rather than incidentally true.
+2. **Clean rebuild** from the pinned toolchain in a fresh clone.
+3. **Line-length and style lint** across the generated files (currently the generators emit
+   some lines past 100 characters).
+
+### The large-degree argument as actually taken
+
+The informal write-up's §4–§7 were followed in outline but not in detail, because using the
+*sharp* Beta constant `6/((r+1)(r+2)(r+3)(r+4))` instead of `6/r⁴` changes what has to be
+proved — and makes almost all of it easier.
+
+* With `r = (n-4)/2` the product is `(n-2) n (n+2)(n+4)/16`, and the `n(n-2)` cancels the
+  `n(n-2)` in the prefactor of `R` **exactly**.  The first tail term collapses to the rational
+  function `24 (n-1-2α)²/((3+α) c⁴ (n-1)(n+2)(n+4))`.  The write-up's degree-8 positivity
+  certificate `(18)` is for the `6/r⁴` version and is not needed.
+* The write-up's `(16)` claims the first tail term decreases outright.  It does not: at
+  `α = 17` the factor `(n-1-2α)²/((n-1)(n+2)(n+4))` *increases* up to `n ≈ 108`, by 0.37%.
+  It is `c⁴` in the denominator that pays for this — `c` rises from `0.405` to `0.416` over
+  the same span, an 11% gain.  Rather than couple the two, a flat 1% allowance is taken and
+  discharged by its own certificate (`tail1_poly`); the 1% costs `0.0018` of margin.
+* The `√B` in the geometric step is replaced by the rational bound `√B ≤ 12/13`
+  (since `B ≤ 17/20 ≤ (12/13)²`), which keeps the step ratio rational: `0.961 < 1`.  Writing
+  `B^((n-4)/2)` as `(√B)^(n-4)`, a *natural* power, turns §4 into an ordinary induction on `n`
+  with no `rpow` reasoning at all.
+* §7's split of `[0,17]` at `α = 16` is unnecessary.  Clearing denominators by
+  `865200 (3+α)^49 γ⁴`, `γ = 300 + 47α - α²`, makes the whole of `Ut α < 1` a single
+  degree-58 polynomial positivity, and its Bernstein certificate on `[0,17]` has **all 59
+  coefficients positive**.  One `ring` call and one case split.
+
+Margins on the final bound: `Ut(0) = 0.3305`, `Ut(8) = 0.3456`, `Ut(16) = 0.7598`,
+`Ut(17) = 0.9229`.  The peak is at the endpoint `α = 17`, with 7.7% of room — against the
+0.15% the write-up's route leaves at the same point.
 
 ---
 
@@ -347,6 +393,35 @@ certificate.
   `newline="
 "` is given, and Lean rejects isolated carriage returns.  `/tmp` in Git Bash is
   not `/tmp` to Windows Python.
+
+* **A certificate interval that the hypotheses do not justify.**  The batch generator fixed
+  the Bernstein interval at `[0,17]`, but feasibility only gives `α ≤ (n-1)/2`, which is
+  `2.5` for the `[6,6]` batch and `8.5` for `[16,18]`.  On `[0,17]` the polynomial genuinely
+  is not positive there (`A₆(17) = -5.8`), so the low batches failed — correctly.  The
+  interval must be `min(17, (n₁-1)/2)`, and the batch theorem must *derive* `α ≤ U` from
+  `alpha_le_half_M` rather than from the ambient `α ≤ 17`.  Nothing unsound resulted, but the
+  failure looked like a certificate-quality problem when it was a hypothesis-scope problem.
+
+* **A hypothesis that propagates the wrong way.**  The batch bound was originally stated with
+  feasibility `c² ≤ A` required *at `n₀`*.  Feasibility propagates *upward* in `n` (since `A`
+  increases), so it cannot be inherited from the hypothesis at `n`, and for `n₀ ≲ 36` it does
+  not follow from `α ≤ 17` either.  The fix was to weaken what is actually needed: `Q ≤ 1`
+  only requires `0 ≤ c`, because `Q t - 1 = t(A t - 2c)` and `Q 1 = B < 1` already gives
+  `A ≤ 2c`, whether or not `A ≥ 0`.  Nonnegativity of `Q` at `n₀` then comes free from
+  `Q_anti`.  Worth generalising a lemma before generating thirty files that need it.
+
+* **Memory, not time, is the build limit.**  Rebuilding all 31 batch files simultaneously
+  makes Lean exit with `0xC0000409` and spurious `failed to read file ...olean` errors — an
+  out-of-memory failure that reads like corruption.  Each file builds fine alone.  Lake in
+  this toolchain has no `--jobs` flag, so the workaround is to build in explicit groups
+  (`scripts/staged_build.sh`).  Note any edit to `Statement.lean`, even to a docstring,
+  invalidates every one of them.
+
+* **Backslashes vanishing between the shell and Python.**  Passing a Python patch script
+  through a heredoc silently collapsed `\\n` to `\n`, so string replacements aimed at
+  generator source either failed to match or wrote a literal newline into a string literal.
+  The generated Lean then still compiled, with the wrong linear form in a certificate.
+  Write patch scripts to a file rather than piping them through a shell.
 
 The habit that caught all of these: validate generated data against an *independent*
 computation — quadrature for moments, exact evaluation at several rational points for
