@@ -81,11 +81,11 @@ private lemma quad_le_exp {y : ℝ} (hy : 0 ≤ y) : 1 + y + y ^ 2 / 2 ≤ exp y
     intro z hz
     refine nonneg_of_deriv (f := fun t => exp t - 1 - t - t ^ 2 / 2)
       (g := fun t => exp t - 1 - t) (fun t => ?_) (by norm_num) (fun t ht => ?_) hz
-    · have h := (((Real.hasDerivAt_exp t).sub_const 1).sub (hasDerivAt_id' t)).sub
+    · have h := (((hasDerivAt_exp t).sub_const 1).sub (hasDerivAt_id' t)).sub
         ((hasDerivAt_pow 2 t).div_const 2)
       refine h.congr_deriv ?_
       norm_num
-    · have := Real.add_one_le_exp t
+    · have := add_one_le_exp t
       linarith
   linarith [key y hy]
 
@@ -106,7 +106,7 @@ private lemma hasDerivAt_Sf (u₃ u₂ u₁ u₀ v₄ v₃ v₂ v₁ v₀ w₃ w
     have h := ((hasDerivAt_id' y).const_mul (2 : ℝ)).exp
     refine h.congr_deriv ?_
     ring
-  have he1 : HasDerivAt (fun t : ℝ => exp t) (exp y) y := Real.hasDerivAt_exp y
+  have he1 : HasDerivAt (fun t : ℝ => exp t) (exp y) y := hasDerivAt_exp y
   have hu : HasDerivAt (fun t : ℝ => u₃ * t ^ 3 + u₂ * t ^ 2 + u₁ * t + u₀)
       (3 * u₃ * y ^ 2 + 2 * u₂ * y + u₁) y := by
     have h := ((((hasDerivAt_pow 3 y).const_mul u₃).add
@@ -147,8 +147,8 @@ private lemma step8 (y : ℝ) (hy : 0 ≤ y) :
   have h3 : (0 : ℝ) ≤ exp y * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560)
       - (2504 + 1600 * y + 352 * y ^ 2 + 32 * y ^ 3 + 1 * y ^ 4) := by
     nlinarith [h1, h2]
-  have hexp : exp (2 * y) = exp y * exp y := by rw [two_mul, Real.exp_add]
-  have h4 := mul_nonneg (Real.exp_pos y).le h3
+  have hexp : exp (2 * y) = exp y * exp y := by rw [two_mul, exp_add]
+  have h4 := mul_nonneg (exp_pos y).le h3
   calc (0 : ℝ) ≤ exp y * (exp y * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560)
         - (2504 + 1600 * y + 352 * y ^ 2 + 32 * y ^ 3 + 1 * y ^ 4)) := h4
     _ = Sf 256 512 (-512) 2560 1 32 352 1600 2504 0 0 0 0 y := by
@@ -240,13 +240,13 @@ private lemma step0 (y : ℝ) (hy : 0 ≤ y) :
 private lemma Sf_eq (h : ℝ) :
     Sf 1 (-10) 36 (-36) 1 0 16 0 (-72) 1 10 36 36 (2 * h)
     = 16 * exp h ^ 2 * (h ^ 4 * sinh h ^ 2 - (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2) := by
-  have hE : exp h ≠ 0 := (Real.exp_pos h).ne'
+  have hE : exp h ≠ 0 := (exp_pos h).ne'
   have e4 : exp (2 * (2 * h)) = exp h ^ 4 := by
-    rw [show (2 : ℝ) * (2 * h) = h + h + h + h by ring, Real.exp_add, Real.exp_add, Real.exp_add]
+    rw [show (2 : ℝ) * (2 * h) = h + h + h + h by ring, exp_add, exp_add, exp_add]
     ring
   have e2 : exp (2 * h) = exp h ^ 2 := by
-    rw [show (2 : ℝ) * h = h + h by ring, Real.exp_add]; ring
-  simp only [Sf, Real.sinh_eq, Real.cosh_eq, e4, e2, Real.exp_neg]
+    rw [show (2 : ℝ) * h = h + h by ring, exp_add]; ring
+  simp only [Sf, sinh_eq, cosh_eq, e4, e2, exp_neg]
   field_simp
   ring
 
@@ -255,59 +255,57 @@ theorem sinh_sq_le {h : ℝ} (hh : 0 ≤ h) :
     (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2 ≤ h ^ 4 * sinh h ^ 2 := by
   have h0 := step0 (2 * h) (by linarith)
   rw [Sf_eq] at h0
-  have hpos : (0 : ℝ) < 16 * exp h ^ 2 := by positivity
+  have : (0 : ℝ) < 16 * exp h ^ 2 := by positivity
   by_contra hc
-  push_neg at hc
-  nlinarith [h0, hpos, hc]
+  push Not at hc
+  nlinarith
 
 /-- `sinh h ≤ h cosh h` for `h ≥ 0`; equivalently `h cosh h - sinh h ≥ 0`, which is what makes
 the square root below legitimate. -/
 private lemma sinh_le_mul_cosh {h : ℝ} (hh : 0 ≤ h) : sinh h ≤ h * cosh h := by
-  have key : ∀ z : ℝ, 0 ≤ z → 0 ≤ z * cosh z - sinh z := by
-    intro z hz
+  have : 0 ≤ h * cosh h - sinh h := by
     refine nonneg_of_deriv (f := fun t => t * cosh t - sinh t) (g := fun t => t * sinh t)
-      (fun t => ?_) (by simp) (fun t ht => mul_nonneg ht (Real.sinh_nonneg_iff.2 ht)) hz
-    have h := ((hasDerivAt_id' t).mul (Real.hasDerivAt_cosh t)).sub (Real.hasDerivAt_sinh t)
-    refine h.congr_deriv ?_
-    ring
-  linarith [key h hh]
+      (fun t => ?_) (by simp) (fun t ht => mul_nonneg ht (sinh_nonneg_iff.2 ht)) hh
+    exact (((hasDerivAt_id' t).mul (hasDerivAt_cosh t)).sub (hasDerivAt_sinh t)).congr_deriv
+      (by ring)
+  linarith
 
 /-- `√(h²+9) (h cosh h - sinh h) ≤ h² sinh h`: the square root of `Sendov.sinh_sq_le`, which is
 the derivative inequality `coth h - 1/h ≤ h/√(h²+9)` cleared of denominators. -/
 theorem sqrt_mul_sub_le {h : ℝ} (hh : 0 ≤ h) :
-    Real.sqrt (h ^ 2 + 9) * (h * cosh h - sinh h) ≤ h ^ 2 * sinh h := by
+    sqrt (h ^ 2 + 9) * (h * cosh h - sinh h) ≤ h ^ 2 * sinh h := by
   have hd : (0 : ℝ) ≤ h * cosh h - sinh h := by linarith [sinh_le_mul_cosh hh]
-  have hs : (0 : ℝ) ≤ h ^ 2 * sinh h := mul_nonneg (sq_nonneg h) (Real.sinh_nonneg_iff.2 hh)
-  have hroot : Real.sqrt (h ^ 2 + 9) ^ 2 = h ^ 2 + 9 := Real.sq_sqrt (by positivity)
-  have hl : (0 : ℝ) ≤ Real.sqrt (h ^ 2 + 9) * (h * cosh h - sinh h) :=
-    mul_nonneg (Real.sqrt_nonneg _) hd
-  have hsq : (Real.sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2 ≤ (h ^ 2 * sinh h) ^ 2 := by
-    calc (Real.sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2
+  have : (0 : ℝ) ≤ h ^ 2 * sinh h := mul_nonneg (sq_nonneg h) (sinh_nonneg_iff.2 hh)
+  have hroot : sqrt (h ^ 2 + 9) ^ 2 = h ^ 2 + 9 := sq_sqrt (by positivity)
+  have : (0 : ℝ) ≤ sqrt (h ^ 2 + 9) * (h * cosh h - sinh h) :=
+    mul_nonneg (sqrt_nonneg _) hd
+  have : (sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2 ≤ (h ^ 2 * sinh h) ^ 2 := by
+    calc (sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2
         = (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2 := by rw [mul_pow, hroot]
       _ ≤ h ^ 4 * sinh h ^ 2 := sinh_sq_le hh
       _ = (h ^ 2 * sinh h) ^ 2 := by ring
-  nlinarith [hsq, hl, hs]
+  nlinarith
 
 /-- **The sharp bound.**  This is `(lsh)` of the blog post. -/
 theorem log_sinh_div_le {h : ℝ} (hh : 0 < h) :
-    Real.log (sinh h / h) ≤ Real.sqrt (h ^ 2 + 9) - 3 := by
-  set ψ : ℝ → ℝ := fun z => Real.sqrt (z ^ 2 + 9) - 3 - (Real.log (sinh z) - Real.log z) with hψdef
+    log (sinh h / h) ≤ sqrt (h ^ 2 + 9) - 3 := by
+  set ψ : ℝ → ℝ := fun z => sqrt (z ^ 2 + 9) - 3 - (log (sinh z) - log z) with hψdef
   -- `ψ` has nonnegative derivative on `(0,∞)`
   have hderiv : ∀ z : ℝ, 0 < z →
-      HasDerivAt ψ (z / Real.sqrt (z ^ 2 + 9) - (cosh z / sinh z - 1 / z)) z := by
+      HasDerivAt ψ (z / sqrt (z ^ 2 + 9) - (cosh z / sinh z - 1 / z)) z := by
     intro z hz
     have hs9 : (0 : ℝ) < z ^ 2 + 9 := by positivity
-    have hsq : Real.sqrt (z ^ 2 + 9) ≠ 0 := by positivity
-    have hsinh : sinh z ≠ 0 := ne_of_gt (Real.sinh_pos_iff.2 hz)
-    have h1 : HasDerivAt (fun t : ℝ => Real.sqrt (t ^ 2 + 9) - 3)
-        (z / Real.sqrt (z ^ 2 + 9)) z := by
+    have hsq : sqrt (z ^ 2 + 9) ≠ 0 := by positivity
+    have hsinh : sinh z ≠ 0 := ne_of_gt (sinh_pos_iff.2 hz)
+    have h1 : HasDerivAt (fun t : ℝ => sqrt (t ^ 2 + 9) - 3)
+        (z / sqrt (z ^ 2 + 9)) z := by
       have h := (((hasDerivAt_pow 2 z).add_const 9).sqrt (ne_of_gt hs9)).sub_const 3
       refine h.congr_deriv ?_
       field_simp
       ring
-    have h2 : HasDerivAt (fun t : ℝ => Real.log (sinh t) - Real.log t)
+    have h2 : HasDerivAt (fun t : ℝ => log (sinh t) - log t)
         (cosh z / sinh z - 1 / z) z := by
-      have ha := (Real.hasDerivAt_sinh z).log hsinh
+      have ha := (hasDerivAt_sinh z).log hsinh
       have hb := (hasDerivAt_id' z).log (ne_of_gt hz)
       have h := ha.sub hb
       refine h.congr_deriv ?_
@@ -321,36 +319,36 @@ theorem log_sinh_div_le {h : ℝ} (hh : 0 < h) :
     rw [interior_Ioi] at hz
     have hz0 : (0 : ℝ) < z := hz
     rw [(hderiv z hz0).deriv]
-    have hsinh : (0 : ℝ) < sinh z := Real.sinh_pos_iff.2 hz0
-    have hsq : (0 : ℝ) < Real.sqrt (z ^ 2 + 9) := by positivity
+    have hsinh : (0 : ℝ) < sinh z := sinh_pos_iff.2 hz0
+    have hsq : (0 : ℝ) < sqrt (z ^ 2 + 9) := by positivity
     rw [sub_nonneg, div_sub_div _ _ (ne_of_gt hsinh) (ne_of_gt hz0),
       div_le_div_iff₀ (by positivity) hsq]
     have := sqrt_mul_sub_le (le_of_lt hz0)
     nlinarith [this, hsq, hsinh, hz0]
   -- `ψ → 0` as `z → 0⁺`
   have hslope : Filter.Tendsto (fun z : ℝ => sinh z / z) (nhdsWithin 0 {(0 : ℝ)}ᶜ) (nhds 1) := by
-    have h := Real.hasDerivAt_sinh 0
+    have h := hasDerivAt_sinh 0
     rw [hasDerivAt_iff_tendsto_slope] at h
-    simpa [slope_fun_def, Real.sinh_zero, Real.cosh_zero, div_eq_inv_mul] using h
+    simpa [slope_fun_def, sinh_zero, cosh_zero, div_eq_inv_mul] using h
   have hlog : Filter.Tendsto ψ (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
     have hsub : nhdsWithin (0 : ℝ) (Set.Ioi 0) ≤ nhdsWithin 0 {(0 : ℝ)}ᶜ :=
       nhdsWithin_mono _ (fun z hz => ne_of_gt hz)
-    have h1 : Filter.Tendsto (fun z : ℝ => Real.log (sinh z / z))
+    have h1 : Filter.Tendsto (fun z : ℝ => log (sinh z / z))
         (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
-      have := (Real.continuousAt_log one_ne_zero).tendsto.comp (hslope.mono_left hsub)
+      have := (continuousAt_log one_ne_zero).tendsto.comp (hslope.mono_left hsub)
       simpa [Function.comp_def] using this
-    have h2 : Filter.Tendsto (fun z : ℝ => Real.sqrt (z ^ 2 + 9) - 3)
+    have h2 : Filter.Tendsto (fun z : ℝ => sqrt (z ^ 2 + 9) - 3)
         (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
-      have h9 : Real.sqrt (9 : ℝ) = 3 := by
-        rw [show (9 : ℝ) = 3 ^ 2 by norm_num, Real.sqrt_sq (by norm_num : (0:ℝ) ≤ 3)]
-      have hc : ContinuousAt (fun z : ℝ => Real.sqrt (z ^ 2 + 9) - 3) 0 := by fun_prop
+      have h9 : sqrt (9 : ℝ) = 3 := by
+        rw [show (9 : ℝ) = 3 ^ 2 by norm_num, sqrt_sq (by norm_num : (0:ℝ) ≤ 3)]
+      have hc : ContinuousAt (fun z : ℝ => sqrt (z ^ 2 + 9) - 3) 0 := by fun_prop
       simpa [ContinuousWithinAt, h9] using hc.continuousWithinAt (s := Set.Ioi (0 : ℝ))
     have heq : ∀ᶠ z : ℝ in nhdsWithin 0 (Set.Ioi 0),
-        ψ z = (Real.sqrt (z ^ 2 + 9) - 3) - Real.log (sinh z / z) := by
+        ψ z = (sqrt (z ^ 2 + 9) - 3) - log (sinh z / z) := by
       filter_upwards [self_mem_nhdsWithin] with z hz
       have hz0 : (0 : ℝ) < z := hz
       rw [hψdef]
-      rw [Real.log_div (ne_of_gt (Real.sinh_pos_iff.2 hz0)) (ne_of_gt hz0)]
+      rw [log_div (ne_of_gt (sinh_pos_iff.2 hz0)) (ne_of_gt hz0)]
     rw [Filter.tendsto_congr' heq]
     simpa using h2.sub h1
   -- combine
@@ -360,22 +358,22 @@ theorem log_sinh_div_le {h : ℝ} (hh : 0 < h) :
     filter_upwards [hmem] with z hz
     exact hmono (Set.mem_Ioi.2 hz.1) (Set.mem_Ioi.2 hh) (le_of_lt hz.2)
   have h0 : (0 : ℝ) ≤ ψ h := le_of_tendsto hlog hev
-  have hpos : (0 : ℝ) < sinh h / h := div_pos (Real.sinh_pos_iff.2 hh) hh
+  have hpos : (0 : ℝ) < sinh h / h := div_pos (sinh_pos_iff.2 hh) hh
   rw [hψdef] at h0
-  rw [Real.log_div (ne_of_gt (Real.sinh_pos_iff.2 hh)) (ne_of_gt hh)]
+  rw [log_div (ne_of_gt (sinh_pos_iff.2 hh)) (ne_of_gt hh)]
   linarith
 
 /-- The form in which the estimate is used: `sinh h ≤ h exp (√(h²+9) - 3)`. -/
 theorem sinh_le_mul_exp {h : ℝ} (hh : 0 ≤ h) :
-    sinh h ≤ h * Real.exp (Real.sqrt (h ^ 2 + 9) - 3) := by
+    sinh h ≤ h * exp (sqrt (h ^ 2 + 9) - 3) := by
   rcases eq_or_lt_of_le hh with rfl | hpos
   · simp
   · have hlog := log_sinh_div_le hpos
-    have hd : (0 : ℝ) < sinh h / h := div_pos (Real.sinh_pos_iff.2 hpos) hpos
-    have := (Real.log_le_iff_le_exp hd).1 hlog
+    have hd : (0 : ℝ) < sinh h / h := div_pos (sinh_pos_iff.2 hpos) hpos
+    have := (log_le_iff_le_exp hd).1 hlog
     calc sinh h = (sinh h / h) * h := by field_simp
-      _ ≤ Real.exp (Real.sqrt (h ^ 2 + 9) - 3) * h :=
+      _ ≤ exp (sqrt (h ^ 2 + 9) - 3) * h :=
           mul_le_mul_of_nonneg_right this (le_of_lt hpos)
-      _ = h * Real.exp (Real.sqrt (h ^ 2 + 9) - 3) := by ring
+      _ = h * exp (sqrt (h ^ 2 + 9) - 3) := by ring
 
 end Sendov

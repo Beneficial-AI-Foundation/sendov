@@ -54,7 +54,9 @@ still succeed — a fact that matters repeatedly below.
 | Degree 20 via packing | `FiniteRange/Degree20Packed.lean` | proved, cross-checked |
 | Degree 53 moment via packing | `FiniteRange/Degree53Packed.lean` | proved, 10 s |
 | Degree 97 moments (k = 46, 47) | `FiniteRange/Degree97Packed.lean` | proved, 17 s |
-| Beta integral (B1) | `LargeDegree/Beta.lean` | proved |
+| The quadratic `QQ c A t` (shared) | `Common/Quadratic.lean` | proved |
+| Beta integrals and the split (shared) | `Common/Chord.lean` | proved |
+| The sinh lemma (shared) | `Common/Sinh.lean` | proved |
 | Tail bound `R ≤ U` (B2) | `LargeDegree/Tail.lean` | proved |
 | Degree monotonicity of `U` (B3) | `LargeDegree/Monotone.lean` | proved |
 | `Ut < 1`, degrees ≥ 101 (B4–B5) | `LargeDegree/Endgame.lean` | proved |

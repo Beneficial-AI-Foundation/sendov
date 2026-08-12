@@ -1,5 +1,7 @@
 import Sendov.Common.Basic
 import Sendov.Common.Rpow
+import Sendov.Common.Quadratic
+import Sendov.Common.Chord
 import Sendov.FiniteRange.Batch
 import Sendov.FiniteRange.Moments
 import Sendov.FiniteRange.OddBound
@@ -46,7 +48,6 @@ import Sendov.FiniteRange.Degree60_63
 import Sendov.FiniteRange.Degree64_69
 import Sendov.FiniteRange.Degree70_79
 import Sendov.FiniteRange.Degree80_100
-import Sendov.LargeDegree.Beta
 import Sendov.LargeDegree.Tail
 import Sendov.FiniteRange.Cover
 import Sendov.LargeDegree.Monotone
