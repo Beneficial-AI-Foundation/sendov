@@ -71,6 +71,7 @@ still succeed — a fact that matters repeatedly below.
 | The defect lemma | `Analytic/Defect.lean` | proved |
 | The two factorizations | `Counterexample/Factor.lean` | proved |
 | The four identities (Lemma 1) | `Counterexample/Identities.lean` | proved |
+| The polar branch point and `(1Q)` | `Analytic/Polar.lean` | proved |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
 | Mutation test | `scripts/mutation_test.sh` | passes |
