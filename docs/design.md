@@ -69,6 +69,7 @@ still succeed — a fact that matters repeatedly below.
 | **`(1Q)` and `(origin-exact)` incompatible** | **`Reduction/Main.lean`** | **proved** |
 | Maclaurin's inequality (top case) | `Analytic/Maclaurin.lean` | proved |
 | The defect lemma | `Analytic/Defect.lean` | proved |
+| The two factorizations | `Counterexample/Factor.lean` | proved |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
 | Mutation test | `scripts/mutation_test.sh` | passes |
@@ -610,6 +611,14 @@ certificate.
   numeric step with an explicit `div_le_iff₀` and letting `norm_num` see `2.7` on its own
   worked.  Decimal literals are fine inside `nlinarith` hint terms and in `norm_num` goals —
   it is the coefficient extraction that is fragile.
+
+* **`rw` with a factorization loops against the thing being factored.**  `p = C p.leadingCoeff *
+  (p.roots.map …).prod` cannot simply be rewritten into a goal that still mentions `p.roots` or
+  `p.leadingCoeff` — the rewrite hits its own right-hand side.  Extracting the multiset first
+  with `obtain ⟨z, hz⟩ : ∃ z, p.roots = a ::ₘ z := ⟨_, rfl⟩` gives an *opaque* local, after which
+  the rewrite is one-directional and terminates.  `set` does not work here: it introduces a local
+  definition that tactics unfold again — the same trap as in `Reduction/Alpha17.lean`, where it
+  made `linarith` goals nonlinear.  `obtain … := ⟨_, rfl⟩` is the idiom in both cases.
 
 The habit that caught all of these: validate generated data against an *independent*
 computation — quadrature for moments, exact evaluation at several rational points for
