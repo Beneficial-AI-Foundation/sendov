@@ -67,6 +67,8 @@ still succeed — a fact that matters repeatedly below.
 | `(1le)+(beta-bound) ⟹ stat` | `Reduction/Stat.lean` | proved |
 | `⟹ α ≤ 17` | `Reduction/Alpha17.lean` | proved |
 | **`(1Q)` and `(origin-exact)` incompatible** | **`Reduction/Main.lean`** | **proved** |
+| Maclaurin's inequality (top case) | `Analytic/Maclaurin.lean` | proved |
+| The defect lemma | `Analytic/Defect.lean` | proved |
 | Certificate generators | `scripts/*.py` | untrusted, self-checking |
 | Trust audit | `scripts/audit.sh` | passes |
 | Mutation test | `scripts/mutation_test.sh` | passes |
@@ -366,6 +368,61 @@ So: no certificate, no series manipulation, one `ring` identity and eight applic
 "vanishes at `0`, has nonnegative derivative".  The only analysis left is the limit
 `sinh h/h → 1` at `0⁺`, which is just the derivative of `sinh` at `0` read through
 `hasDerivAt_iff_tendsto_slope`.
+
+---
+
+## 6c. Conjecture `interior`: the complex-analytic half
+
+The remaining target is Sendov's conjecture in the interior itself, for `n ≥ 5`: a counterexample
+gives the four identities of the blog post's Lemma 1, those give `(1Q)` and `(origin-exact)`, and
+`Sendov.polar_origin_incompatible` closes it.  The blog signposts the split — *"the polynomial `p`
+will play no further role"* — so the interface between the two stages is a structure carrying the
+identities and the disk hypotheses, and nothing else.
+
+**Multisets throughout.**  Roots arrive from Mathlib as a `Multiset`, repeated roots must be
+allowed, and the alternative — indexing by `Fin (n-1)` — pays a bookkeeping tax at every step.
+This decision already paid off twice; see below.
+
+### Constraints from the later stages
+
+Two plans for later stages (`n ≤ 4`, and the boundary case `a = 1`) constrain how this stage
+should be built, and both were read before any of it was written:
+
+* The low-degree argument for `2 ≤ n ≤ 5` branches off **immediately after the exact polar
+  identity**, using only the Möbius bound and the integral triangle inequality — not the
+  `x`-relaxation.  So the polar channel must expose
+
+    `1 ≤ ∫₀¹ ∏ⱼ |a + t(1-a²)qⱼ| dt`
+
+  as a named intermediate: high degree relaxes it by AM–GM to `(1Q)`, low degree bounds each
+  factor by `a + (1-a²)t`.  Do not fuse those steps.
+* The boundary case must **not** be forced into a structure carrying `a < 1`, and does not use
+  the polar identity at all (it degenerates at `a = 1`).  So the factorization layer — roots,
+  critical points, `|zⱼ| ≤ 1`, `|1 - wⱼ| ≥ 1`, the two factorizations — must be
+  hypothesis-light, with `a < 1` and `a ≠ 0` entering only above it.
+
+Also worth knowing: the low-degree argument covers `2 ≤ n ≤ 5`, so degree 5 could eventually be
+dropped from the finite-certificate machinery.
+
+### Two informal proofs that got shorter
+
+Both prerequisites turned out to need far less than the write-up suggests, and in both cases
+because the multiset formulation made the right induction available.
+
+* **Maclaurin's inequality** (`e_{N-1} ≤ N μ^{N-1}`) normally comes from Newton's inequalities,
+  which need real-rootedness of derivatives via Rolle.  The top case does not: splitting off one
+  element and applying the inductive hypothesis and AM–GM leaves `1 + N(w-1) ≤ wᴺ`, which is
+  Bernoulli.  AM–GM for multisets is proved the same way rather than imported — Mathlib states it
+  for `Finset`-indexed families — and its step is Bernoulli at exponent `N+1`, so the two proofs
+  share their only ingredient and the file imports no AM–GM at all.
+* **The defect lemma** is proved in the write-up by setting `‖wⱼ‖ = e^{-aⱼ}`, computing
+  `‖wⱼ⁻¹ - conj wⱼ‖ = 2 sinh aⱼ` and using superadditivity of `sinh`.  Splitting off one point
+  instead leaves `1 - r²P² - [P(1-r²) + r(1-P²)] = (1-r)(1-P)(1-rP) ≥ 0`.  No `sinh`, no
+  logarithms.  The origin `wⱼ = 0`, which the informal proof reaches by a limiting argument, needs
+  no separate treatment: the pointwise fact `‖w‖·‖w⁻¹ - conj w‖ ≤ 1 - ‖w‖²` is true there as an
+  inequality, because the left side carries a factor `‖w‖` that kills Lean's junk `0⁻¹`.
+
+Neither statement mentions anything Sendov-specific; both are candidates for upstreaming.
 
 ---
 
