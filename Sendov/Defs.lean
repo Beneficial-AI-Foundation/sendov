@@ -7,18 +7,20 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 
 /-!
-# The finite-range numerical claim in the proof of Sendov's conjecture
+# Definitions for the finite-range numerical claim
 
-This file fixes the notation of the one numerical claim left open in the blog post
-*A digestion of the proof of Sendov's conjecture*.  Nothing else from that post is
-formalized here: the polynomial argument that produces the claim is deliberately kept
-outside this file, so that the numerical statement can be audited on its own.
+This file fixes the notation of the numerical claim `stat`, the one step of the proof that is
+discharged by computation rather than by argument.  It contains definitions only; no statement
+is made here.
 
-The claim itself is `Sendov.finite_range`, stated and proved in `Sendov.FiniteRange.Cover`.
-It cannot be stated here, because every other file in the development imports this one for
-the definitions below; putting the claim at the bottom of the import graph would prevent it
-from being proved.  Auditing the statement therefore means reading this file for the
-definitions and `Sendov.FiniteRange.Cover` for the claim built from them.
+`stat` cannot be stated in this file, because every other file in the development imports it
+for the definitions below, and putting the claim at the bottom of the import graph would
+prevent it from being proved.  It is stated and proved in `Sendov.FiniteRange.Cover`, so
+auditing it means reading this file for the definitions and that one for the claim built from
+them.
+
+For where `stat` enters the proof as a whole, see `Sendov.Reduction.Main` and the repository
+README; for the finite-range component on its own, see `docs/finite-range.md`.
 
 ## Background
 

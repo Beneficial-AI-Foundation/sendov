@@ -9,7 +9,7 @@ import Sendov.LargeDegree.Endgame
 /-!
 # The numerical claim, for every degree
 
-This is the top of the development.  `Sendov.Statement` fixes the notation of equation `stat`
+This is the top of the development.  `Sendov.Defs` fixes the notation of equation `stat`
 of the blog post; everything else establishes that its right-hand side `R n α` is below `1`.
 Two arguments meet here.
 

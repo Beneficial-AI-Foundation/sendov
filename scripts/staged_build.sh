@@ -1,7 +1,7 @@
 #!/bin/sh
 # Lake in this toolchain has no --jobs flag, and a simultaneous rebuild of all 31 batch
 # files exhausts memory (Lean exits 0xC0000409, reported as `failed to read file ...olean`).
-# Build them a few at a time instead.  Note that any edit to Statement.lean, even to a
+# Build them a few at a time instead.  Note that any edit to Defs.lean, even to a
 # docstring, invalidates every one of them.
 cd "$(dirname "$0")/.." || exit 1
 set -- \

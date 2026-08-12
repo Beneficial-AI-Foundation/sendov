@@ -1,14 +1,20 @@
-# Documents
+# The finite-range check
 
-Reference material for the Sendov finite-range formalization.  Provenance and status differ
-between these files, and a reviewer should know which is which.
+Reference material for the finite-range component of the proof: the Bernstein-certificate
+verification of the numerical claim `stat` for degrees 5 to 100, and the analytic argument for
+degrees 101 and above.  This is one component; for the proof as a whole, and for where this
+component is used, see the [repository README](../README.md).
+
+The two documents below are external hand-off material, and both have been superseded in
+parts.  A reviewer should know which claims still stand.
 
 | file | what it is | status |
 |---|---|---|
-| [`design.md`](design.md) | This project's own design record: what is proved, what is open, why the architecture is what it is, and the measured costs behind each decision. | Maintained. Measurements reproducible; claims about the Lean development are checkable against the source. |
 | [`plan-finite-range.md`](plan-finite-range.md) | The original hand-off plan for formalizing the finite range, written before any code existed. | **External, superseded in parts.** See below. |
 | [`proof-large-degree.md`](proof-large-degree.md) | An informal but formalization-ready proof that `stat` is impossible for `n > 100`, plus (in its §9) speculative strategies for lowering the finite cutoff. | **External. Formalized in outline, not in detail** — see below. Its §9 is explicitly labelled unproved by its author. |
-| [`sendov-blog-post.tex`](sendov-blog-post.tex) | Source of the blog post the claim comes from. `stat` is the equation being formalized. | Draft, unpublished. **To do:** once the post is live, replace this file with a link to it. |
+
+The project's own design record, including the measurements behind the decisions recorded
+here, is [`design.md`](design.md).
 
 ## Where the plan has been superseded
 

@@ -23,7 +23,7 @@ real-variable statement.
 
 This file fixes `P` and records the dictionary.  The key entry is that `α` and `a` determine
 each other: with `α = (n-1)(1-a²)/2` one has `A n α = a²` *exactly*, so the `A` of
-`Sendov.Statement` and the `a²` of the blog post are the same thing, and `β(t)` is
+`Sendov.Defs` and the `a²` of the blog post are the same thing, and `β(t)` is
 `Sendov.QQ (a*x) (a^2) t` while `Q n α t` is `Sendov.QQ (c n α) (A n α) t`.
 
 ## Main statements
@@ -54,7 +54,7 @@ lemma Ppolar_nonneg (hx : x ^ 2 ≤ 1) (a t : ℝ) : 0 ≤ Ppolar a x t := by
 lemma continuous_Ppolar (a x : ℝ) : Continuous fun t : ℝ => Ppolar a x t := by
   simp only [Ppolar]; fun_prop
 
-/-- With `α = (n-1)(1-a²)/2`, the `A` of `Sendov.Statement` is exactly `a²`. -/
+/-- With `α = (n-1)(1-a²)/2`, the `A` of `Sendov.Defs` is exactly `a²`. -/
 lemma A_eq_sq (hn : 2 ≤ n) (hα : α = M n * (1 - a ^ 2) / 2) : A n α = a ^ 2 := by
   have hM : M n ≠ 0 := (M_pos hn).ne'
   simp only [A, hα]

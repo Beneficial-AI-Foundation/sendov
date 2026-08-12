@@ -26,8 +26,8 @@ satisfies `R n α < 1` on `5 ≤ n ≤ 97`, `0 ≤ α ≤ 17`, subject to the fe
 `c² ≤ A`.  (`n ≥ 98` is handled by a separate analytic argument; see §6.)  The exponent is a
 *real* exponent — half-integral for odd `n` — so `Real.rpow` is involved.
 
-`Sendov/Statement.lean` states exactly this with one `sorry`, and derives the `False` form in
-which it is applied.  That file is the audit surface: everything else exists to discharge it.
+`Sendov/Defs.lean` fixes the notation; `Sendov/FiniteRange/Cover.lean` states the claim and
+derives the `False` form in which it is applied.
 
 **Numerically**, `R` attains max `0.8529` at `n = 53, α = 17`.  So a bound may lose ~15% and
 still succeed — a fact that matters repeatedly below.
@@ -38,7 +38,7 @@ still succeed — a fact that matters repeatedly below.
 
 | component | file | state |
 |---|---|---|
-| Definitions of `stat` | `Statement.lean` | definitions only |
+| Definitions of `stat` | `Defs.lean` | definitions only |
 | **The claim, degrees 5–100** | **`FiniteRange/Cover.lean`** | **proved** |
 | Basic properties (shared A/B) | `Common/Basic.lean` | proved |
 | Real powers, integrability (shared A/B) | `Common/Rpow.lean` | proved |
@@ -554,7 +554,7 @@ certificate.
   makes Lean exit with `0xC0000409` and spurious `failed to read file ...olean` errors — an
   out-of-memory failure that reads like corruption.  Each file builds fine alone.  Lake in
   this toolchain has no `--jobs` flag, so the workaround is to build in explicit groups
-  (`scripts/staged_build.sh`).  Note any edit to `Statement.lean`, even to a docstring,
+  (`scripts/staged_build.sh`).  Note any edit to `Defs.lean`, even to a docstring,
   invalidates every one of them.
 
 * **Backslashes vanishing between the shell and Python.**  Passing a Python patch script
