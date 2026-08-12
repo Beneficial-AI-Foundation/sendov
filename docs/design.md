@@ -317,7 +317,7 @@ The chain, all links checked numerically and symbolically before any Lean was wr
 | `{1Q} ⟹ {lt}` | **proved**, `Sendov.polar_exp`.  The pointwise bound `(at)` is an *identity* up to `t² ≤ t`: rhs − lhs = `(2α/(n−1))²(t−t²)` |
 | `{lt} ⟹ {beta-bound}` | **proved**, `Sendov.beta_le` |
 | `{beta-bound}+{origin-exact} ⟹ {17}` | max of the bound is `1.817 < 2` at `n = 51, α = 17` |
-| `{origin-exact} ⟹ {1le}` | the mean-value step and the Beta identity confirmed |
+| `{origin-exact} ⟹ {1le}` | **proved**, `Sendov.one_le_of_origin` |
 | `{1le}+{beta-bound} ⟹ {stat}` | **proved**, `Sendov.stat_of_one_le` |
 
 Three deliberate deviations from the write-up:

@@ -127,16 +127,16 @@ private lemma hasDerivAt_Sf (u₃ u₂ u₁ u₀ v₄ v₃ v₂ v₁ v₀ w₃ w
 polynomial with every coefficient positive. -/
 private lemma step8 (y : ℝ) (hy : 0 ≤ y) :
     0 ≤ Sf 256 512 (-512) 2560 1 32 352 1600 2504 0 0 0 0 y := by
-  have hA : (0 : ℝ) ≤ 256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560 := by
+  have : (1 + y + y ^ 2 / 2) * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560)
+      ≤ exp y * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560) := by
+    grw [quad_le_exp hy]
     nlinarith [sq_nonneg (y - 1), pow_nonneg hy 3, sq_nonneg y]
-  have h1 : (1 + y + y ^ 2 / 2) * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560)
-      ≤ exp y * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560) :=
-    mul_le_mul_of_nonneg_right (quad_le_exp hy) hA
-  have h2 : (0 : ℝ) ≤ 56 + 448 * y + 928 * y ^ 2 + 480 * y ^ 3 + 511 * y ^ 4 + 128 * y ^ 5 := by
+  have : (0 : ℝ) ≤ 56 + 448 * y + 928 * y ^ 2 + 480 * y ^ 3 + 511 * y ^ 4 + 128 * y ^ 5 := by
     nlinarith [pow_nonneg hy 5, pow_nonneg hy 4, pow_nonneg hy 3, sq_nonneg y, hy]
   have h3 : (0 : ℝ) ≤ exp y * (256 * y ^ 3 + 512 * y ^ 2 - 512 * y + 2560)
       - (2504 + 1600 * y + 352 * y ^ 2 + 32 * y ^ 3 + 1 * y ^ 4) := by nlinarith
-  calc _ ≤ _ := mul_nonneg (exp_pos y).le h3
+  calc
+    _ ≤ _ := mul_nonneg (exp_pos y).le h3
     _ = _ := by
         simp only [Sf, two_mul, exp_add]
         ring
@@ -203,7 +203,7 @@ private lemma step0 (y : ℝ) (hy : 0 ≤ y) :
 private lemma Sf_eq (h : ℝ) :
     Sf 1 (-10) 36 (-36) 1 0 16 0 (-72) 1 10 36 36 (2 * h)
     = 16 * exp h ^ 2 * (h ^ 4 * sinh h ^ 2 - (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2) := by
-  have hE : exp h ≠ 0 := (exp_pos h).ne'
+  have : exp h ≠ 0 := (exp_pos h).ne'
   have e4 : exp (2 * (2 * h)) = exp h ^ 4 := by simp [←exp_nat_mul]; ring
   have e2 : exp (2 * h) = exp h ^ 2 := by simp [←exp_nat_mul]
   simp only [Sf, sinh_eq, cosh_eq, e4, e2, exp_neg]
@@ -236,10 +236,9 @@ theorem sqrt_mul_sub_le {h : ℝ} (hh : 0 ≤ h) :
   have : (0 : ℝ) ≤ sqrt (h ^ 2 + 9) * (h * cosh h - sinh h) :=
     mul_nonneg (sqrt_nonneg _) (by linarith [sinh_le_mul_cosh hh])
   have : (sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2 ≤ (h ^ 2 * sinh h) ^ 2 := by
-    calc (sqrt (h ^ 2 + 9) * (h * cosh h - sinh h)) ^ 2
-        = (h ^ 2 + 9) * (h * cosh h - sinh h) ^ 2 := by rw [mul_pow, sq_sqrt (by positivity)]
-      _ ≤ h ^ 4 * sinh h ^ 2 := sinh_sq_le hh
-      _ = (h ^ 2 * sinh h) ^ 2 := by ring
+    convert sinh_sq_le hh
+    · rw [mul_pow, sq_sqrt (by positivity)]
+    ·  ring
   nlinarith
 
 /-- **The sharp bound.**  This is `(lsh)` of the blog post. -/
@@ -263,41 +262,30 @@ theorem log_sinh_div_le {h : ℝ} (hh : 0 < h) :
       (fun z hz => (hderiv z hz).continuousAt.continuousWithinAt)
       (fun z hz => (hderiv z (by rwa [interior_Ioi] at hz)).differentiableAt.differentiableWithinAt)
       (fun z hz => ?_)
-    rw [interior_Ioi] at hz
-    have hz0 : (0 : ℝ) < z := hz
-    rw [(hderiv z hz0).deriv]
-    have hsinh : (0 : ℝ) < sinh z := sinh_pos_iff.2 hz0
-    have hsq : (0 : ℝ) < sqrt (z ^ 2 + 9) := by positivity
-    rw [sub_nonneg, div_sub_div _ _ (ne_of_gt hsinh) (ne_of_gt hz0),
-      div_le_div_iff₀ (by positivity) hsq]
-    have := sqrt_mul_sub_le (le_of_lt hz0)
-    nlinarith [this, hsq, hsinh, hz0]
+    rw [interior_Ioi, mem_Ioi] at hz
+    rw [(hderiv z hz).deriv, sub_nonneg, div_sub_div _ _ (ne_of_gt (sinh_pos_iff.2 hz))
+      (ne_of_gt hz), div_le_div_iff₀ (by positivity) (by positivity)]
+    nlinarith [sqrt_mul_sub_le (le_of_lt hz)]
   -- `ψ → 0` as `z → 0⁺`
-  have hslope : Tendsto (fun z : ℝ => sinh z / z) (nhdsWithin 0 {(0 : ℝ)}ᶜ) (nhds 1) := by
-    have h := hasDerivAt_sinh 0
-    rw [hasDerivAt_iff_tendsto_slope] at h
-    simpa [slope_fun_def, sinh_zero, cosh_zero, div_eq_inv_mul] using h
+  have hslope : Tendsto (fun z => sinh z / z) (nhdsWithin 0 {(0 : ℝ)}ᶜ) (nhds 1) := by
+    simpa [slope_fun_def, div_eq_inv_mul, hasDerivAt_iff_tendsto_slope] using hasDerivAt_sinh 0
   have hlog : Tendsto ψ (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
     have hsub : nhdsWithin (0 : ℝ) (Ioi 0) ≤ nhdsWithin 0 {(0 : ℝ)}ᶜ :=
       nhdsWithin_mono _ (fun z hz => ne_of_gt hz)
-    have h1 : Tendsto (fun z : ℝ => log (sinh z / z))
-        (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
-      have := (continuousAt_log one_ne_zero).tendsto.comp (hslope.mono_left hsub)
-      simpa [Function.comp_def] using this
+    have h1 : Tendsto (fun z => log (sinh z / z)) (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
+      simpa [Function.comp_def] using (continuousAt_log one_ne_zero).tendsto.comp
+        (hslope.mono_left hsub)
     have h2 : Tendsto (fun z : ℝ => sqrt (z ^ 2 + 9) - 3)
         (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
       have h9 : sqrt (9 : ℝ) = 3 := by
         rw [show (9 : ℝ) = 3 ^ 2 by norm_num, sqrt_sq (by norm_num : (0:ℝ) ≤ 3)]
-      have hc : ContinuousAt (fun z : ℝ => sqrt (z ^ 2 + 9) - 3) 0 := by fun_prop
+      have hc : ContinuousAt (fun z => sqrt (z ^ 2 + 9) - 3) 0 := by fun_prop
       simpa [ContinuousWithinAt, h9] using hc.continuousWithinAt (s := Ioi (0 : ℝ))
     have heq : ∀ᶠ z : ℝ in nhdsWithin 0 (Ioi 0),
         ψ z = (sqrt (z ^ 2 + 9) - 3) - log (sinh z / z) := by
       filter_upwards [self_mem_nhdsWithin] with z hz
-      have hz0 : (0 : ℝ) < z := hz
-      rw [hψdef]
-      rw [log_div (ne_of_gt (sinh_pos_iff.2 hz0)) (ne_of_gt hz0)]
-    rw [tendsto_congr' heq]
-    simpa using h2.sub h1
+      rw [hψdef, log_div (ne_of_gt (sinh_pos_iff.2 hz)) (ne_of_gt hz)]
+    simpa [tendsto_congr' heq] using h2.sub h1
   -- combine
   have hev : ∀ᶠ z : ℝ in nhdsWithin 0 (Ioi 0), ψ z ≤ ψ h := by
     have hmem : Ioo (0 : ℝ) h ∈ nhdsWithin (0 : ℝ) (Ioi 0) :=
@@ -305,7 +293,7 @@ theorem log_sinh_div_le {h : ℝ} (hh : 0 < h) :
     filter_upwards [hmem] with z hz
     exact hmono (mem_Ioi.2 hz.1) (mem_Ioi.2 hh) (le_of_lt hz.2)
   have h0 : (0 : ℝ) ≤ ψ h := le_of_tendsto hlog hev
-  have hpos : (0 : ℝ) < sinh h / h := div_pos (sinh_pos_iff.2 hh) hh
+  have : (0 : ℝ) < sinh h / h := div_pos (sinh_pos_iff.2 hh) hh
   rw [hψdef] at h0
   rw [log_div (ne_of_gt (sinh_pos_iff.2 hh)) (ne_of_gt hh)]
   linarith
