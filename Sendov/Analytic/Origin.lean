@@ -10,16 +10,17 @@ import Sendov.Common.Quadratic
 import Sendov.Analytic.Polar
 
 /-!
-# The origin inequality: the pointwise estimate
+# The origin inequality: the pointwise estimate and `(tri)`
 
 The origin argument controls `F(t) = ∏ⱼ (1 - a t qⱼ)` through its derivative,
 
   `F'(t) = -(n-1) a (x+iy) F(t) - a² t ∑ⱼ qⱼ² ∏_{k≠j} (1 - a t q_k)`,
 
-and the error term is bounded by `a² t (n-1) β(t)^{(n-2)/2}`.  That bound is what this file
-establishes; the integration and the `J`-algebra follow in later files.
+whose error term is bounded by `a² t (n-1) β(t)^{(n-2)/2}`.  Integrating that against the
+fundamental theorem of calculus and `F(0) = 1` gives the triangle inequality `(tri)`.  The
+`J`-algebra that turns `(tri)` into `(origin-exact)` follows in a later file.
 
-Three steps, in increasing order of depth:
+The error bound has three steps, in increasing order of depth:
 
 * `∑ⱼ ‖1 - a t qⱼ‖² ≤ (n-1) β(t)`, the same expansion that produced the quadratic mean in the
   polar channel — this is where `x` enters;
@@ -39,7 +40,15 @@ injective, the two are matched through the recurrence they share.
 
 * `Sendov.sumEraseProdMap_eq_esymm`: the two forms of `∑ⱼ ∏_{k≠j}` agree;
 * `Sendov.sum_norm_sq_one_sub_le`: `∑ⱼ ‖1 - a t qⱼ‖² ≤ (n-1) β(t)`;
-* `Sendov.sumEraseProdMap_norm_le`: the error bound `(n-1) β(t)^{(n-2)/2}`.
+* `Sendov.sumEraseProdMap_norm_le`: the error bound `(n-1) β(t)^{(n-2)/2}`;
+* `Sendov.hasDerivAt_Fprod`: `F'(t) = -a ∑ⱼ qⱼ ∏_{k≠j} (1 - a t q_k)`;
+* `Sendov.norm_deriv_add_le`: `‖F'(t) + (n-1) a (x+iy) F(t)‖ ≤ a² t (n-1) β(t)^{(n-2)/2}`;
+* `Sendov.one_le_tri`: the triangle inequality `(tri)`.
+
+The derivative is assembled from a *weighted* erasure sum `sumEraseProdC q g f = ∑ⱼ g(qⱼ)
+∏_{k≠j} f(q_k)`: taking `g = id` gives `F'` itself, and the identity `1 - (1 - a t qⱼ) = a t qⱼ`
+splits that into the main term `(∑ⱼ qⱼ) F(t)` plus `a t` times the case `g = (· ^ 2)`, which is
+the residual actually being estimated.
 -/
 
 namespace Sendov
@@ -222,5 +231,224 @@ theorem sumEraseProdMap_norm_le {n : ℕ} (hn : 2 ≤ n) {a x t : ℝ} {q : Mult
         rw [← hNcast] at hpow ⊢
         exact hpow
     _ = ((n : ℝ) - 1) * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2) := by rw [hfin]
+
+/-! ### The derivative of `F(t) = ∏ⱼ (1 - a t qⱼ)` -/
+
+open scoped Classical in
+/-- `∑ⱼ g(qⱼ) ∏_{k≠j} f(q_k)`, the weighted erasure sum over `ℂ`.  Taking `g = id` gives the
+derivative of a product; taking `g = (· ^ 2)` gives the residual left after the main term is
+split off. -/
+noncomputable def sumEraseProdC (s : Multiset ℂ) (g f : ℂ → ℂ) : ℂ :=
+  (s.map (fun j => g j * ((s.erase j).map f).prod)).sum
+
+open scoped Classical in
+@[simp] lemma sumEraseProdC_zero (g f : ℂ → ℂ) : sumEraseProdC 0 g f = 0 := by
+  simp [sumEraseProdC]
+
+open scoped Classical in
+lemma sumEraseProdC_cons (v : ℂ) (t : Multiset ℂ) (g f : ℂ → ℂ) :
+    sumEraseProdC (v ::ₘ t) g f = g v * (t.map f).prod + f v * sumEraseProdC t g f := by
+  simp only [sumEraseProdC, Multiset.map_cons, Multiset.sum_cons, Multiset.erase_cons_head]
+  congr 1
+  rw [← Multiset.sum_map_mul_left]
+  refine congrArg Multiset.sum (Multiset.map_congr rfl ?_)
+  intro j hj
+  rw [Multiset.erase_cons_tail_of_mem hj, Multiset.map_cons, Multiset.prod_cons]
+  ring
+
+/-- A weighted erasure sum with unit-size weights is dominated by the unweighted one. -/
+lemma norm_sumEraseProdC_le (g f : ℂ → ℂ) : ∀ (s : Multiset ℂ), (∀ v ∈ s, ‖g v‖ ≤ 1) →
+    ‖sumEraseProdC s g f‖ ≤ sumEraseProdMap s (fun v => ‖f v‖) := by
+  intro s
+  induction s using Multiset.induction_on with
+  | empty => intro _; simp [sumEraseProdMap]
+  | cons v t ih =>
+    intro hg
+    have hv := hg v (Multiset.mem_cons_self v t)
+    have ht : ∀ u ∈ t, ‖g u‖ ≤ 1 := fun u hu => hg u (Multiset.mem_cons_of_mem hu)
+    rw [sumEraseProdC_cons, sumEraseProdMap_cons]
+    refine (norm_add_le _ _).trans ?_
+    rw [norm_mul, norm_mul, norm_prod_map]
+    have h2 : (0 : ℝ) ≤ (t.map (fun v => ‖f v‖)).prod := prod_map_norm_nonneg t f
+    nlinarith [ih ht, norm_nonneg (f v), norm_nonneg (sumEraseProdC t g f), h2, hv]
+
+/-- `F(t) = ∏ⱼ (1 - a t qⱼ)`. -/
+noncomputable def Fprod (a : ℝ) (q : Multiset ℂ) (t : ℝ) : ℂ :=
+  (q.map (fun v => 1 - (a : ℂ) * (t : ℂ) * v)).prod
+
+@[simp] lemma Fprod_zero (a : ℝ) (q : Multiset ℂ) : Fprod a q 0 = 1 := by
+  simp [Fprod]
+
+/-- Splitting the derivative sum into its main term and its residual:
+`∑ⱼ qⱼ ∏_{k≠j}(1-atq_k) = (∑ⱼ qⱼ) F(t) + a t ∑ⱼ qⱼ² ∏_{k≠j}(1-atq_k)`, since
+`1 - (1 - a t qⱼ) = a t qⱼ`. -/
+lemma sumEraseProdC_id_eq (a t : ℝ) : ∀ (q : Multiset ℂ),
+    sumEraseProdC q id (fun v => 1 - (a : ℂ) * (t : ℂ) * v)
+      = q.sum * Fprod a q t
+        + (a : ℂ) * (t : ℂ) * sumEraseProdC q (fun v => v ^ 2)
+            (fun v => 1 - (a : ℂ) * (t : ℂ) * v) := by
+  intro q
+  induction q using Multiset.induction_on with
+  | empty => simp [Fprod]
+  | cons v r ih =>
+    rw [sumEraseProdC_cons, sumEraseProdC_cons, ih, Multiset.sum_cons]
+    simp only [Fprod, Multiset.map_cons, Multiset.prod_cons, id]
+    ring
+
+/-- `F'(t) = -a ∑ⱼ qⱼ ∏_{k≠j}(1 - a t q_k)`. -/
+lemma hasDerivAt_Fprod (a t : ℝ) : ∀ (q : Multiset ℂ),
+    HasDerivAt (Fprod a q)
+      (-(a : ℂ) * sumEraseProdC q id (fun v => 1 - (a : ℂ) * (t : ℂ) * v)) t := by
+  intro q
+  induction q using Multiset.induction_on with
+  | empty =>
+    have he : Fprod a 0 = fun _ : ℝ => (1 : ℂ) := by funext s; simp [Fprod]
+    have hz : -(a : ℂ) * sumEraseProdC 0 id (fun v => 1 - (a : ℂ) * (t : ℂ) * v) = 0 := by simp
+    rw [he, hz]
+    exact hasDerivAt_const t 1
+  | cons v r ih =>
+    have h0 : HasDerivAt (fun s : ℝ => (s : ℂ)) 1 t := Complex.ofRealCLM.hasDerivAt
+    have h1 : HasDerivAt (fun s : ℝ => 1 - (a : ℂ) * (s : ℂ) * v) (-((a : ℂ) * v)) t := by
+      simpa using ((h0.const_mul (a : ℂ)).mul_const v).const_sub 1
+    have h2 := h1.mul ih
+    have hfun : Fprod a (v ::ₘ r)
+        = fun s : ℝ => (1 - (a : ℂ) * (s : ℂ) * v) * Fprod a r s := by
+      funext s
+      simp only [Fprod, Multiset.map_cons, Multiset.prod_cons]
+    have hderiv : -(a : ℂ) * ((v : ℂ) * (r.map (fun w => 1 - (a : ℂ) * (t : ℂ) * w)).prod
+          + (1 - (a : ℂ) * (t : ℂ) * v) * sumEraseProdC r id (fun w => 1 - (a : ℂ) * (t : ℂ) * w))
+        = -((a : ℂ) * v) * Fprod a r t
+          + (1 - (a : ℂ) * (t : ℂ) * v)
+              * (-(a : ℂ) * sumEraseProdC r id (fun w => 1 - (a : ℂ) * (t : ℂ) * w)) := by
+      simp only [Fprod]
+      ring
+    rw [hfun, sumEraseProdC_cons, id_eq, hderiv]
+    exact h2
+
+/-- **The pointwise estimate.**  `‖F'(t) + (n-1) a (x+iy) F(t)‖ ≤ a² t (n-1) β(t)^{(n-2)/2}`. -/
+theorem norm_deriv_add_le {n : ℕ} (hn : 2 ≤ n) {a x y t : ℝ} {q : Multiset ℂ}
+    (hqcard : q.card = n - 1) (hq0 : q ≠ 0) (hq1 : ∀ v ∈ q, ‖v‖ ≤ 1)
+    (ha0 : 0 ≤ a) (ht0 : 0 ≤ t)
+    (hx : (q.map (fun v => v.re)).sum = ((n : ℝ) - 1) * x)
+    (hsum : q.sum = (((n : ℝ) - 1) : ℂ) * ((x : ℂ) + (y : ℂ) * Complex.I)) :
+    ‖(-(a : ℂ) * sumEraseProdC q id (fun v => 1 - (a : ℂ) * (t : ℂ) * v))
+        + (((n : ℝ) - 1) : ℂ) * (a : ℂ) * ((x : ℂ) + (y : ℂ) * Complex.I) * Fprod a q t‖
+      ≤ a ^ 2 * t * ((n : ℝ) - 1) * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2) := by
+  set S : ℂ := sumEraseProdC q (fun v => v ^ 2) (fun v => 1 - (a : ℂ) * (t : ℂ) * v) with hS
+  have hmain : (-(a : ℂ) * sumEraseProdC q id (fun v => 1 - (a : ℂ) * (t : ℂ) * v))
+      + (((n : ℝ) - 1) : ℂ) * (a : ℂ) * ((x : ℂ) + (y : ℂ) * Complex.I) * Fprod a q t
+      = -((a : ℂ) ^ 2 * (t : ℂ)) * S := by
+    rw [sumEraseProdC_id_eq, hsum, ← hS]
+    ring
+  rw [hmain, norm_mul]
+  have hnorm : ‖-((a : ℂ) ^ 2 * (t : ℂ))‖ = a ^ 2 * t := by
+    simp [abs_of_nonneg ha0, abs_of_nonneg ht0]
+  rw [hnorm]
+  have hSle : ‖S‖ ≤ sumEraseProdMap q (fun v => ‖1 - (a : ℂ) * (t : ℂ) * v‖) := by
+    rw [hS]
+    refine norm_sumEraseProdC_le _ _ q ?_
+    intro v hv
+    rw [norm_pow]
+    exact pow_le_one₀ (norm_nonneg v) (hq1 v hv)
+  have hbd := sumEraseProdMap_norm_le (a := a) (x := x) (t := t) hn hqcard hq0 hq1 hx
+  have hfac : (0 : ℝ) ≤ a ^ 2 * t := mul_nonneg (pow_nonneg ha0 2) ht0
+  calc a ^ 2 * t * ‖S‖
+      ≤ a ^ 2 * t * (((n : ℝ) - 1) * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2)) :=
+        mul_le_mul_of_nonneg_left (hSle.trans hbd) hfac
+    _ = a ^ 2 * t * ((n : ℝ) - 1) * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2) := by ring
+
+/-! ### Integrating the pointwise estimate: the triangle inequality `(tri)` -/
+
+lemma continuous_prodC (a : ℝ) : ∀ (q : Multiset ℂ),
+    Continuous fun t : ℝ => (q.map (fun v => 1 - (a : ℂ) * (t : ℂ) * v)).prod := by
+  intro q
+  induction q using Multiset.induction_on with
+  | empty => simpa using continuous_const
+  | cons v r ih =>
+    simp only [Multiset.map_cons, Multiset.prod_cons]
+    exact (by fun_prop : Continuous fun t : ℝ => 1 - (a : ℂ) * (t : ℂ) * v).mul ih
+
+lemma continuous_Fprod (a : ℝ) (q : Multiset ℂ) : Continuous (Fprod a q) :=
+  continuous_prodC a q
+
+lemma continuous_sumEraseProdC (a : ℝ) (g : ℂ → ℂ) : ∀ (q : Multiset ℂ),
+    Continuous fun t : ℝ => sumEraseProdC q g (fun v => 1 - (a : ℂ) * (t : ℂ) * v) := by
+  intro q
+  induction q using Multiset.induction_on with
+  | empty =>
+    simp only [sumEraseProdC_zero]
+    exact continuous_const
+  | cons v r ih =>
+    simp only [sumEraseProdC_cons]
+    exact (continuous_const.mul (continuous_prodC a r)).add
+      ((by fun_prop : Continuous fun t : ℝ => 1 - (a : ℂ) * (t : ℂ) * v).mul ih)
+
+/-- **The triangle inequality `(tri)`.**  Integrating `norm_deriv_add_le` against the
+fundamental theorem of calculus, using `F(0) = 1`. -/
+theorem one_le_tri {n : ℕ} (hn : 2 ≤ n) {a x y : ℝ} {q : Multiset ℂ}
+    (hqcard : q.card = n - 1) (hq0 : q ≠ 0) (hq1 : ∀ v ∈ q, ‖v‖ ≤ 1) (ha0 : 0 ≤ a)
+    (hx : (q.map (fun v => v.re)).sum = ((n : ℝ) - 1) * x)
+    (hsum : q.sum = ((n : ℂ) - 1) * ((x : ℂ) + (y : ℂ) * Complex.I)) :
+    1 ≤ ‖Fprod a q 1 + ((n : ℂ) - 1) * (a : ℂ) * ((x : ℂ) + (y : ℂ) * Complex.I)
+            * ∫ t in (0 : ℝ)..1, Fprod a q t‖
+        + a ^ 2 * ((n : ℝ) - 1)
+            * ∫ t in (0 : ℝ)..1, t * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2) := by
+  set c : ℂ := ((n : ℂ) - 1) * (a : ℂ) * ((x : ℂ) + (y : ℂ) * Complex.I) with hc
+  set D : ℝ → ℂ := fun t => -(a : ℂ) * sumEraseProdC q id (fun v => 1 - (a : ℂ) * (t : ℂ) * v)
+    with hDdef
+  have hDcont : Continuous D := by
+    rw [hDdef]
+    exact continuous_const.mul (continuous_sumEraseProdC a id q)
+  have hFcont : Continuous (Fprod a q) := continuous_Fprod a q
+  have hDint : IntervalIntegrable D MeasureTheory.volume 0 1 := hDcont.intervalIntegrable _ _
+  have hFint : IntervalIntegrable (Fprod a q) MeasureTheory.volume 0 1 :=
+    hFcont.intervalIntegrable _ _
+  have hFTC : ∫ t in (0 : ℝ)..1, D t = Fprod a q 1 - Fprod a q 0 :=
+    intervalIntegral.integral_eq_sub_of_hasDerivAt (fun t _ => hasDerivAt_Fprod a t q) hDint
+  -- the exact identity behind the triangle inequality
+  have hG : ∫ t in (0 : ℝ)..1, (D t + c * Fprod a q t)
+      = (Fprod a q 1 - 1) + c * ∫ t in (0 : ℝ)..1, Fprod a q t := by
+    rw [intervalIntegral.integral_add hDint (hFint.const_mul c), hFTC, Fprod_zero,
+      intervalIntegral.integral_const_mul]
+  have hkey : (1 : ℂ) = (Fprod a q 1 + c * ∫ t in (0 : ℝ)..1, Fprod a q t)
+      - ∫ t in (0 : ℝ)..1, (D t + c * Fprod a q t) := by
+    rw [hG]; ring
+  -- the pointwise bound, integrated
+  have hexp : (0 : ℝ) ≤ ((n : ℝ) - 2) / 2 := by
+    have : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+    linarith
+  have hRcont : Continuous fun t : ℝ =>
+      a ^ 2 * ((n : ℝ) - 1) * (t ^ 1 * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2)) :=
+    continuous_const.mul (continuous_pow_mul_QQ (a * x) (a ^ 2) 1 hexp)
+  have hGnorm : ∀ t ∈ Set.Icc (0 : ℝ) 1, ‖D t + c * Fprod a q t‖
+      ≤ a ^ 2 * ((n : ℝ) - 1) * (t ^ 1 * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2)) := by
+    intro t ht
+    have h := norm_deriv_add_le hn hqcard hq0 hq1 ha0 ht.1 hx hsum (t := t) (y := y)
+    rw [hDdef, hc]
+    calc ‖-(a : ℂ) * sumEraseProdC q id (fun v => 1 - (a : ℂ) * (t : ℂ) * v)
+            + ((n : ℂ) - 1) * (a : ℂ) * ((x : ℂ) + (y : ℂ) * Complex.I) * Fprod a q t‖
+        ≤ a ^ 2 * t * ((n : ℝ) - 1) * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2) := h
+      _ = a ^ 2 * ((n : ℝ) - 1) * (t ^ 1 * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2)) := by ring
+  have hint : ‖∫ t in (0 : ℝ)..1, (D t + c * Fprod a q t)‖
+      ≤ a ^ 2 * ((n : ℝ) - 1)
+          * ∫ t in (0 : ℝ)..1, t * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2) := by
+    refine (intervalIntegral.norm_integral_le_integral_norm (by norm_num : (0 : ℝ) ≤ 1)).trans ?_
+    have hni : IntervalIntegrable (fun t : ℝ => ‖D t + c * Fprod a q t‖)
+        MeasureTheory.volume 0 1 :=
+      (hDcont.add (continuous_const.mul hFcont)).norm.intervalIntegrable _ _
+    have hri : IntervalIntegrable (fun t : ℝ =>
+        a ^ 2 * ((n : ℝ) - 1) * (t ^ 1 * QQ (a * x) (a ^ 2) t ^ (((n : ℝ) - 2) / 2)))
+        MeasureTheory.volume 0 1 := hRcont.intervalIntegrable _ _
+    have hmono := intervalIntegral.integral_mono_on (by norm_num : (0 : ℝ) ≤ 1) hni hri hGnorm
+    refine hmono.trans ?_
+    rw [intervalIntegral.integral_const_mul]
+    simp
+  -- assemble
+  have hnorm1 : ‖(1 : ℂ)‖ ≤ ‖Fprod a q 1 + c * ∫ t in (0 : ℝ)..1, Fprod a q t‖
+      + ‖∫ t in (0 : ℝ)..1, (D t + c * Fprod a q t)‖ := by
+    conv_lhs => rw [hkey]
+    exact norm_sub_le _ _
+  rw [norm_one] at hnorm1
+  linarith [hnorm1, hint]
 
 end Sendov
