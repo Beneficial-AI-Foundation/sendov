@@ -305,8 +305,10 @@ different high-degree powers. Same degree, entirely different cost.
 Items 1–4 (packing bridge, degrees 9–100, composition, the analytic `n ≥ 101` argument) are
 all **done**; see §2.  What remains is assurance work, not mathematics:
 
-1. **Mutation test** — corrupt one certificate coefficient and confirm the build fails.  This
-   is the check that the certificates are load-bearing rather than incidentally true.
+1. **Mutation test** — *done*, `scripts/mutation_test.sh`.  Five load-bearing data are each
+   corrupted in turn (a Bernstein identity coefficient, a coefficient of the certified
+   polynomial, a moment datum, the endgame constant, a monotonicity coefficient) and every one
+   breaks the build.  See §7b for what the first run got wrong.
 2. **Clean rebuild** from the pinned toolchain in a fresh clone.
 3. **Line-length and style lint** across the generated files (currently the generators emit
    some lines past 100 characters).
@@ -422,6 +424,16 @@ certificate.
   generator source either failed to match or wrote a literal newline into a string literal.
   The generated Lean then still compiled, with the wrong linear form in a certificate.
   Write patch scripts to a file rather than piping them through a shell.
+
+* **Half of a generated certificate is inert.**  Each Bernstein coefficient `Gⱼ` appears twice:
+  in `have hⱼ : 0 ≤ Gⱼ αʲ (U-α)^(d-j)` and in the identity `hid`.  Corrupting the *first* is
+  undetectable — `linarith` uses those hypotheses only as "this quantity is nonnegative", and
+  a positive rescaling of a nonnegative quantity is still nonnegative.  The first mutation
+  test run reported two certificates as "not load-bearing" for exactly this reason; the
+  content is all in `hid`.  (Module docstrings quoting a coefficient add a third occurrence,
+  which is inert for the same trivial reason.)  `scripts/mutation_test.sh` therefore names the
+  occurrence index, and a reviewer reading a generated file should know that the `have` block
+  is bookkeeping, not evidence.
 
 The habit that caught all of these: validate generated data against an *independent*
 computation — quadrature for moments, exact evaluation at several rational points for
