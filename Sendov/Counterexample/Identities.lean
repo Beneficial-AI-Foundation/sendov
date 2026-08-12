@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Terence Tao
 -/
 import Sendov.Counterexample.Factor
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
 /-!
 # The centroid and second origin identities
@@ -194,5 +195,41 @@ theorem second_origin_identity {p : ℂ[X]} (hc0 : c ≠ 0)
     _ = ((n : ℂ) * (q.map (fun v => v⁻¹ - a)).prod) * q.prod := by ring
     _ = ((-1) ^ (n - 1) * (z.prod + a * sumEraseProd z)) * q.prod := by rw [hcancel]
     _ = (-1) ^ (n - 1) * q.prod * (z.prod + a * sumEraseProd z) := by ring
+
+/-! ### The integral representation -/
+
+open MeasureTheory in
+/-- The integrand of the representation below is continuous. -/
+lemma continuous_deriv_seg (p : ℂ[X]) (a w : ℂ) :
+    Continuous fun t : ℝ => (derivative p).eval (a + (t : ℂ) * (w - a)) := by
+  fun_prop
+
+open MeasureTheory in
+/-- **The integral representation.**  `p(w) = (w-a) ∫₀¹ p'(a + t(w-a)) dt` when `a` is a root
+of `p`.  This is the fundamental theorem of calculus along the segment from `a` to `w`,
+parametrized by a real variable; it replaces the blog post's `p(z) = (z-a)∫₀¹ n ∏ⱼ (t(z-a) +
+1/qⱼ) dt`, which is the same statement with `p'` already factored. -/
+lemma eval_eq_integral {p : ℂ[X]} {a : ℂ} (hpa : p.eval a = 0) (w : ℂ) :
+    p.eval w = (w - a) * ∫ t in (0 : ℝ)..1, (derivative p).eval (a + (t : ℂ) * (w - a)) := by
+  have hderiv : ∀ t : ℝ, HasDerivAt (fun s : ℝ => p.eval (a + (s : ℂ) * (w - a)))
+      ((w - a) * (derivative p).eval (a + (t : ℂ) * (w - a))) t := by
+    intro t
+    have h1 : HasDerivAt (fun s : ℝ => a + (s : ℂ) * (w - a)) (w - a) t := by
+      have h0 : HasDerivAt (fun s : ℝ => (s : ℂ)) 1 t := Complex.ofRealCLM.hasDerivAt
+      simpa using (h0.mul_const (w - a)).const_add a
+    have h2 : HasDerivAt (fun u : ℂ => p.eval u)
+        ((derivative p).eval (a + (t : ℂ) * (w - a))) (a + (t : ℂ) * (w - a)) :=
+      p.hasDerivAt _
+    have h3 := h2.scomp t h1
+    simp only [Function.comp_def] at h3
+    exact h3
+  have hint : IntervalIntegrable
+      (fun t : ℝ => (w - a) * (derivative p).eval (a + (t : ℂ) * (w - a))) volume 0 1 :=
+    ((continuous_deriv_seg p a w).const_smul (w - a)).intervalIntegrable _ _
+  have hFTC := intervalIntegral.integral_eq_sub_of_hasDerivAt
+    (fun t _ => hderiv t) hint
+  simp only [Complex.ofReal_one, Complex.ofReal_zero, zero_mul, add_zero, one_mul] at hFTC
+  rw [show a + (w - a) = w from by ring, hpa, sub_zero] at hFTC
+  rw [← hFTC, intervalIntegral.integral_const_mul]
 
 end Sendov
