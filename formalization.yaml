@@ -26,10 +26,12 @@ scope: >-
 # ---------------------------------------------------------------------------
 # Mathematical sources.
 #
-# This is a source-based formalization. The result is not new and is not
-# claimed to be new: it formalizes the informal proof in the blog post below,
-# which is itself a digestion of an argument already proved and formalized
-# elsewhere. See related_formalizations for the earlier Lean work.
+# This is a source-based formalization. The result is not new, is not claimed
+# to be new, and no literature or formalization search was performed. It
+# formalizes the informal proof in the blog post below, which is itself a
+# digestion and simplification of Lech Mazur's proof -- so the mathematics here
+# descends from that work rather than reaching the theorem independently. See
+# related_formalizations.
 #
 # NOTE TO REVIEWER: the blog post carries the full literature account. The
 # entries below record the sources this formalization actually used to choose,
@@ -42,8 +44,9 @@ sources:
     identifier: "https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/"
     relationship: formalizes
     note: >-
-      The informal proof that this development formalizes, including its new
-      proof of Rubinstein's boundary theorem. The formalization follows its
+      The informal proof that this development formalizes, including the
+      treatment of Rubinstein's boundary theorem that it derives from the same
+      arguments. The formalization follows its
       architecture closely and extends it from n >= 5 to n >= 2. It is a
       published blog post rather than an archived preprint; that URL is the
       most stable identifier that exists for it.
@@ -74,16 +77,20 @@ sources:
     relationship: background
     note: >-
       The boundary case |a| = 1, with the same equality classification. This
-      development proves that case again from scratch, by a different argument
-      (Sendov/Boundary.lean, from p''(1)/p'(1)); it does not transcribe
-      Rubinstein's proof and does not depend on it.
+      development proves that case from scratch in Sendov/Boundary.lean, from
+      p''(1)/p'(1), following the blog post rather than transcribing
+      Rubinstein's paper, on which it does not depend. Whether that argument is
+      new is unknown: no comparison with Rubinstein's proof was made and no
+      literature search was performed.
 
   - title: "On a conjecture of Ilieff"
     authors: ["D. A. Brannan"]
     type: "paper"
     identifier: "Proc. Cambridge Philos. Soc. 64 (1968), 83-85"
     relationship: background
-    note: "The cubic case, established independently here."
+    note: >-
+      The cubic case, which falls out of the low-degree branch here. No
+      comparison with Brannan's argument was made.
 
   - title: "On Ilyeff's conjecture"
     authors: ["A. Meir", "A. Sharma"]
@@ -108,24 +115,34 @@ sources:
     authors: ["Lech Mazur"]
     type: "other"
     identifier: "https://www.proofatlas.ai/papers/sendov-conjecture/"
-    relationship: background
+    relationship: adapts
     note: >-
       The first complete proof of Sendov's conjecture for all n >= 2, produced
-      with an AI tool. This development does not follow its argument; the
-      corresponding Lean work is recorded under related_formalizations.
+      with an AI tool. The blog post above is a digestion and simplification of
+      this argument, so the mathematics formalized here descends from it; the
+      extension to the Phelps-Rodriguez form is what "adapts" records. The
+      adaptation reached this repository through the blog post; this manuscript
+      was not worked from directly. The corresponding Lean work is recorded
+      under related_formalizations.
 
 related_formalizations:
   - id: "https://www.proofatlas.ai/formalizations/sendov-conjecture/"
-    relationship: independent
+    relationship: builds-on
     note: >-
-      An earlier and independent Lean formalization of Sendov's conjecture for
-      all n >= 2, by Lech Mazur, reported there as 1160 files and 92816 lines
-      with a single main theorem. This development shares no code with it, was
-      written from the blog-post digestion rather than from that proof, and
-      additionally proves the Phelps-Rodriguez equality classification, which
-      that formalization does not state. The two are independent evidence for
-      the same theorem; priority for the first machine-checked proof of
-      Sendov's conjecture belongs to that work.
+      The earlier Lean formalization of Sendov's conjecture for all n >= 2, by
+      Lech Mazur, reported there as 1160 files and 92816 lines with a single
+      main theorem. Priority for the first machine-checked proof of Sendov's
+      conjecture belongs to that work, and this repository is the second
+      formalization of it. "builds-on" rather than "independent": no code is
+      shared and that development was never read, but the informal proof
+      formalized here is a digestion of its argument, so the mathematics
+      descends from it. What is additional here is the Phelps-Rodriguez
+      equality classification, which that formalization does not state; as far
+      as we are aware this is its first formalization, but that is an
+      observation about the one earlier formalization we know of and not the
+      result of a search. The two developments are separately checkable
+      evidence for the same theorem; no comparison of their internal arguments
+      has been carried out.
 
 # ---------------------------------------------------------------------------
 # How this was produced.
@@ -174,16 +191,21 @@ known_gaps: []
 
 limitations:
   - >-
-    No novelty is claimed. Sendov's conjecture was already proved and already
-    formalized in Lean, independently, before this work; see
-    related_formalizations. What is new here is the formalization of a
-    different and much shorter argument, together with the Phelps-Rodriguez
-    equality classification.
+    No novelty is claimed anywhere, and no literature or formalization search
+    was performed. Sendov's conjecture was proved, and formalized in Lean,
+    before this work, and the informal proof formalized here is a digestion of
+    that proof; see related_formalizations. Where the documentation notes a
+    difference from earlier work it is describing this development, not
+    claiming priority. In particular the novelty of the boundary argument in
+    Sendov/Boundary.lean is unknown.
   - >-
     The proof depends on a computational component. For degrees 5 to 100 a
     numerical inequality is discharged by Bernstein certificates generated
     outside Lean and re-verified inside it; degrees 101 and above are handled
-    analytically. This is about half the Lean source by line count.
+    analytically. This is about half the Lean source by line count. It uses no
+    interval arithmetic and no floating point: the certificates are exact
+    rationals, and scripts/audit.sh fails if Float appears in any statement or
+    proof.
   - >-
     The compared theorems depend on propext, Classical.choice and Quot.sound,
     and on nothing else. There is no sorry outside the two deliberate holes in

@@ -133,8 +133,9 @@ forces `qⱼ = 1`, so every critical point is `0` and `p = c(zⁿ-1)`.
 
 > [`all_q_eq_one`](Sendov/Boundary.lean#L168) → [`rubinstein_one`](Sendov/Boundary.lean#L210)
 
-This is a new proof of Rubinstein's theorem, and it is where the Phelps–Rodriguez equality
-case comes from.
+The boundary case is Rubinstein's theorem, and it is where the Phelps–Rodriguez equality case
+comes from. It is proved here from scratch, by the argument above rather than by transcribing
+his; whether that argument is new is unknown — see [Provenance](#provenance-and-novelty).
 
 ### 3d. The centre, `a = 0`
 
@@ -197,18 +198,40 @@ the certificate files in batches.
 | [`docs/plan-*.md`](docs/) | the staged hand-off plans, with notes on where they were superseded |
 | [the blog post](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/) | the informal proof being formalized |
 
-## Provenance
+## Provenance and novelty
 
-**Nothing here is claimed to be new.** Sendov's conjecture had already been proved, and
-already formalized in Lean — independently, and before this work — by Lech Mazur, at
-[ProofAtlas](https://www.proofatlas.ai/formalizations/sendov-conjecture/). Priority for the
-first machine-checked proof belongs to that work. This development shares no code with it and
-was written instead from a later, much shorter informal argument; it additionally proves the
-Phelps–Rodriguez equality classification, which that formalization does not state.
+**No novelty is claimed anywhere in this repository, and no literature or formalization search
+was performed.** Where this document notes that something here differs from earlier work, that
+is a description of this development, not a priority claim: whether any of it is new is
+unknown.
 
-The informal proof formalized here is a digestion of the argument, which also yields the new
-proof of Rubinstein's boundary theorem in §3c. `formalization.yaml` records the full source
-list and relationships.
+The mathematics descends from **Lech Mazur's** proof. Sendov's conjecture was first proved, and
+first formalized in Lean, by that work at [ProofAtlas](https://www.proofatlas.ai/formalizations/sendov-conjecture/) — priority for both belongs there.
+The informal proof formalized here is [Tao's digestion](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/) of Mazur's argument, described in
+the post as an effort "to place the proof in proper context with previous literature and to
+simplify and streamline the argument to highlight the main ideas". This repository is therefore
+the **second** formalization of Sendov's conjecture, and its mathematical content is a
+streamlined descendant of the first rather than an independent route to the same theorem.
+
+As far as we are aware it is the first formalization of the **Phelps–Rodriguez** form: the
+earlier formalization reports a single main theorem, Sendov's `‖ζ - a‖ ≤ 1`, and does not state
+the equality classification. That is an observation about the one earlier formalization we know
+of, not the result of a search.
+
+The two developments are separately checkable evidence for the same theorem, and they differ in
+what they state and in size:
+
+| | this repository | the earlier formalization |
+|---|---|---|
+| statement | Sendov **and** Phelps–Rodriguez | Sendov |
+| Lean | 80 files, 15,152 lines | 1,160 files, 92,816 lines *(as reported there)* |
+| shared code | none | |
+
+One difference is worth naming because it is checkable here: this development uses **no
+interval arithmetic and no floating point at all**. The single computational step — a numerical
+inequality for degrees 5 to 100 — is discharged by exact rational Bernstein certificates
+re-verified inside Lean, and `scripts/audit.sh` fails the build if `Float` appears anywhere in
+a statement or proof. No comparison of the two proofs' internal arguments has been carried out.
 
 ## How this was produced
 

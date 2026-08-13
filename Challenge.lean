@@ -50,10 +50,13 @@ positions of the other zeroes beyond the closed unit disk.
 ## Provenance and status
 
 These are the conjectures of Sendov and of Phelps–Rodriguez, in full generality.  Neither
-statement is new, and neither is claimed to be new here; see `formalization.yaml` and the
-repository README for the sources, the relationship to earlier work — including an earlier
-independent Lean formalization of Sendov's conjecture — and an account of how this
-formalization was produced.
+statement is new, nothing here is claimed to be new, and no literature or formalization search
+was performed.
+
+Sendov's conjecture was proved, and formalized in Lean, before this work, and the informal
+proof formalized here is a digestion of that proof; this is the second formalization of it.
+See `formalization.yaml` and the repository README for the sources, the relationship to that
+earlier work, and an account of how this formalization was produced.
 
 The proofs are in the `Sendov` library of this repository and are compared against these
 statements by Comparator.  They use `propext`, `Classical.choice` and `Quot.sound` only.
