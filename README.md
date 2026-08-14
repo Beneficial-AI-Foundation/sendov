@@ -248,6 +248,13 @@ The Bernstein certificates in `Sendov/FiniteRange/` are emitted by the Python sc
 `scripts/`. Those scripts are outside the trusted base: they write Lean source that Lean
 re-verifies from scratch, so a bug in them causes a build failure, not an unsound theorem.
 
+Two documents record the process rather than the result.
+[`docs/making-of.md`](docs/making-of.md) is a curated transcript of the conversation that
+produced the development — the stages it went through, and the dead ends and mistakes along
+the way. [`docs/getting-started.md`](docs/getting-started.md) describes the setup this
+repository started from and the working habits that mattered, for someone new to Lean, VS Code,
+GitHub or coding agents.
+
 ## Licence
 
 Apache-2.0; see [`LICENSE`](LICENSE).

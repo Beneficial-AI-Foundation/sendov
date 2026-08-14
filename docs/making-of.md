@@ -36,14 +36,19 @@ The first four commits (10 August) set the target and proved the easiest cases:
 
 The goal at this point was narrow: **not** Sendov's conjecture, but the single numerical
 inequality that a blog-post proof left to computation on a finite range of degrees. The
-polynomial argument was deliberately kept outside the project.
+polynomial argument was deliberately kept outside the project — that scope, and the trust
+policy below, come from an externally supplied hand-off plan written before any code existed:
+[`plan-finite-range.md`](plan-finite-range.md). The blog post it refers to is
+[*A digestion of the proof of Sendov's conjecture*](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/).
 
 Two decisions made here shaped everything after. The first was a **trust policy**, fixed before
 any real code: no `sorry`, no project-defined `axiom`, no `native_decide`, no `unsafe`, no
-floating point in any statement or proof — with `scripts/audit.sh` written to enforce it and
-run every time. The second was that the Python certificate generators would live **outside the
-trusted base**: they emit Lean source that Lean re-verifies from scratch, so a bug in a
-generator causes a build failure rather than a false theorem.
+floating point in any statement or proof — with [`scripts/audit.sh`](../scripts/audit.sh)
+written to enforce it and run every time. The second was that the Python certificate generators
+would live **outside the trusted base**: they emit Lean source that Lean re-verifies from
+scratch, so a bug in a generator causes a build failure rather than a false theorem. Where the
+plan's technical recommendations were later overturned by measurement is recorded in
+[`finite-range.md`](finite-range.md).
 
 ---
 
@@ -90,7 +95,9 @@ single natural number, so the recurrence becomes one big-integer exponentiation:
 
 *Commit: `Kronecker packing: the fix is representation, not algorithm`. This is the single
 largest speedup in the project, and it came from changing the data structure, not the
-algorithm.*
+algorithm. The measurements are in [`design.md`](design.md) §4; the Lean is
+[`Pack.lean`](../Sendov/FiniteRange/Pack.lean) and
+[`PackBridge.lean`](../Sendov/FiniteRange/PackBridge.lean).*
 
 Degrees 53 and 97 then went through:
 
@@ -116,6 +123,9 @@ Overall the dominant cost fell about 5.5×, and on the hardest range `n ∈ [62,
 | `n ∈ [42,60]` | 28.3 min | 10.2 min | 2.8× |
 | `n ∈ [62,97]` | 69.8 min | 5.6 min | **12.5×** |
 
+*Machinery in [`Batch.lean`](../Sendov/FiniteRange/Batch.lean); measurements in
+[`design.md`](design.md) §3.*
+
 ---
 
 ## 4. Widening the target
@@ -129,11 +139,15 @@ Overall the dominant cost fell about 5.5×, and on the hardest range `n ∈ [62,
 *The analytic argument for large degrees went in — the Beta integral replacing a cruder Gamma
 tail bound, the tail estimate, the degree monotonicity — and met the certificates at the seam
 `100/101`. Commit: `The claim, for every degree`. The finite-range goal was now closed on both
-sides, with no range left open.*
+sides, with no range left open. The supplied analytic argument is
+[`proof-large-degree.md`](proof-large-degree.md); the Lean is
+[`LargeDegree/`](../Sendov/LargeDegree/), and [`finite-range.md`](finite-range.md) records the
+several points at which the write-up had to be departed from.*
 
 Then a check on whether the certificates were doing any work at all:
 
-*Wrote `scripts/mutation_test.sh`, which perturbs a certificate and confirms the build fails.
+*Wrote [`scripts/mutation_test.sh`](../scripts/mutation_test.sh), which perturbs a certificate
+and confirms the build fails.
 Its first run found that part of what it was testing did not bite — recorded in the commit
 message rather than quietly fixed.*
 
@@ -154,8 +168,9 @@ message rather than quietly fixed.*
 `log(sinh h / h) ≤ √(h²+9) - 3`, needed to three orders at `h = 0`. The textbook route is an
 infinite series, which is painful in Lean; instead a family of functions closed under
 differentiation reduced the whole thing to one `ring` identity, eight monotonicity steps, and
-a polynomial with all coefficients positive. Commits: `The sinh lemma, without the series`
-through `The chain closes: {1Q} and {origin-exact} are incompatible`.*
+a polynomial with all coefficients positive — [`Common/Sinh.lean`](../Sendov/Common/Sinh.lean).
+Commits: `The sinh lemma, without the series` through `The chain closes: {1Q} and
+{origin-exact} are incompatible`; the chain itself is [`Reduction/`](../Sendov/Reduction/).*
 
 ---
 
@@ -169,8 +184,9 @@ through `The chain closes: {1Q} and {origin-exact} are incompatible`.*
 *Planned, then built bottom-up. Two ingredients were missing from Mathlib and had to be proved
 from scratch: **Maclaurin's inequality** (the standard route needs Newton's inequalities plus
 real-rootedness and Rolle; an elementary multiset induction reducing to Bernoulli turned out to
-be much shorter) and the **defect lemma** (the write-up's proof goes through `sinh` and a
-limiting argument; a direct induction avoided both).*
+be much shorter — [`Maclaurin.lean`](../Sendov/Analytic/Maclaurin.lean)) and the **defect
+lemma** (the write-up's proof goes through `sinh` and a limiting argument; a direct induction
+avoided both — [`Defect.lean`](../Sendov/Analytic/Defect.lean)).*
 
 Mid-stream, an instruction that changed the architecture of everything downstream:
 
@@ -183,6 +199,10 @@ of index bookkeeping simply never arose.*
 > The later components are "[…]sendov-low-degrees-lean-plan.md" and
 > "[…]sendov-boundary-rubinstein-lean-plan.md". You can read them to see if it affects the
 > current plan, and then go for the defect lemma
+
+*Those two are now [`plan-low-degrees.md`](plan-low-degrees.md) and
+[`plan-boundary-rubinstein.md`](plan-boundary-rubinstein.md); they were followed closely, and
+became §7 below.*
 
 *Two mistakes belong here. Twice, drafting a file, Claude wrote `sorry` placeholders intending
 to fill them in — a direct violation of the project's own trust policy. Both were removed
@@ -200,7 +220,10 @@ Then the identities, the polar branch point, and the origin channel, over severa
 *The origin channel was the largest single piece: the pointwise error bound via Maclaurin,
 Cauchy–Schwarz and the quadratic mean; the derivative of `F(t) = ∏(1 - a t qⱼ)`; the triangle
 inequality by FTC; the defect estimate for `J ∑ 1/zⱼ`; and finally `(origin-exact)` itself,
-landing exactly on the hypothesis the reduction chain wanted.*
+landing exactly on the hypothesis the reduction chain wanted:
+[`Origin.lean`](../Sendov/Analytic/Origin.lean),
+[`Jsum.lean`](../Sendov/Analytic/Jsum.lean),
+[`OriginExact.lean`](../Sendov/Analytic/OriginExact.lean).*
 
 A recurring theme in this stretch: everything was kept **division-free**. The blog post's
 convention of "removing singularities" when some `zⱼ` vanishes was made *unnecessary* rather
@@ -214,19 +237,23 @@ than formalized, by clearing denominators in the statements themselves.
 
 *The high-degree argument genuinely fails below `n = 5` — the discriminant `(3n-1)² - 4(n-1)³`
 turns positive. But the low degrees do not need it: bounding each factor of the branch point by
-a scalar already contradicts itself for `n ≤ 5`. Degree 5 is now proved twice, by independent
+a scalar already contradicts itself for `n ≤ 5` —
+[`LowDegree.lean`](../Sendov/Analytic/LowDegree.lean), following
+[`plan-low-degrees.md`](plan-low-degrees.md). Degree 5 is now proved twice, by independent
 routes.*
 
 > Let's do the a=1 Rubinstein theorem and the a=0 case next
 
 *`a = 0` turned out to be three lines of consequence from a lemma that was already there. The
 boundary case `|a| = 1` needed a genuinely different argument, since the polar identity
-degenerates there, and it is where the Phelps–Rodriguez equality classification comes from.*
+degenerates there, and it is where the Phelps–Rodriguez equality classification comes from —
+[`Boundary.lean`](../Sendov/Boundary.lean), following
+[`plan-boundary-rubinstein.md`](plan-boundary-rubinstein.md).*
 
 > Let's formalize the full Sendov and Phelps-Rodriguez conjecture!
 
-*Only a rotation was left. Both conjectures, in full generality, on `propext`,
-`Classical.choice` and `Quot.sound` alone.*
+*Only a rotation was left — [`Conjecture.lean`](../Sendov/Conjecture.lean). Both conjectures,
+in full generality, on `propext`, `Classical.choice` and `Quot.sound` alone.*
 
 ---
 
@@ -236,9 +263,10 @@ degenerates there, and it is where the Phelps–Rodriguez equality classificatio
 > https://palomar-registry.org/ . What would need to be done to do this?
 
 *Read the registry's own policy repository rather than guessing, and found the repository had
-**no `LICENSE` file** — while all 76 Lean files claimed one. Added the Challenge/Solution pair,
-`comparator.json` and `formalization.yaml`, and validated the metadata by running the registry's
-own validator locally.*
+**no `LICENSE` file** — while all 76 Lean files claimed one. Added the
+[`Challenge.lean`](../Challenge.lean)/[`Solution.lean`](../Solution.lean) pair,
+[`comparator.json`](../comparator.json) and [`formalization.yaml`](../formalization.yaml), and
+validated the metadata by running the registry's own validator locally.*
 
 Registration succeeded, with one reviewer comment:
 
@@ -253,7 +281,8 @@ worse: the post is a digestion **of** the earlier proof, not an independent argu
 so, and cites specific inequalities as extracted from it. So the submitted metadata's claim of
 independence from the earlier Lean formalization was simply wrong, and was corrected to
 `builds-on`. Every novelty claim in the repository is now qualified as unknown, with an explicit
-statement that no literature search was performed.*
+statement that no literature search was performed — see
+[Provenance and novelty](../README.md#provenance-and-novelty).*
 
 ---
 
@@ -263,15 +292,17 @@ Some observations that are not visible in the final source.
 
 **Memory, not time, was the binding constraint.** Building 31 certificate files in parallel
 produced `0xC0000409` crashes and "failed to read … olean" errors on *toolchain* files — which
-look exactly like disk corruption and are actually out-of-memory. The fix was a staged build
-script. At one point the VS Code Lean server holding 7.4 GB had to be restarted.
+look exactly like disk corruption and are actually out-of-memory. The fix was
+[`scripts/staged_build.sh`](../scripts/staged_build.sh). At one point the VS Code Lean server
+holding 7.4 GB had to be restarted.
 
 **Numerical claims were checked before being proved.** Maclaurin's inequality was verified
 numerically over 200,000 cases before any Lean was written; the cheap AM–GM alternative was
 measured and found to lose a factor of `e`, which would have broken a later step. Several hours
 were saved by finding that out first.
 
-**The design record was maintained continuously.** `docs/design.md` accumulated not just what
+**The design record was maintained continuously.** [`design.md`](design.md) accumulated not
+just what
 was proved but the measurements behind each decision and a running list of Lean traps — `set`
 introducing a definition that `linarith` zeta-reduces, `field_simp` distributing across an
 integral atom, `rw [h]` where `h : p = …` also rewriting the `p` inside `p.leadingCoeff`. That
