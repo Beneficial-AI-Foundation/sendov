@@ -26,7 +26,7 @@ The informal proof being formalized is
 Both are in [`Sendov/Conjecture.lean`](Sendov/Conjecture.lean#L83), and both depend on
 `propext`, `Classical.choice` and `Quot.sound` only.
 
-[`Challenge.lean`](Challenge.lean) is the statement of record: 84 lines, importing only
+[`Challenge.lean`](Challenge.lean) is the statement of record: 87 lines, importing only
 Mathlib, declaring no definitions of its own. A reader who wants to check *what* has been
 proved should read that file and need not read anything else.
 
@@ -192,6 +192,8 @@ the certificate files in batches.
 
 | | |
 |---|---|
+| [`docs/making-of.md`](docs/making-of.md) | how this formalization happened: a curated transcript of the conversation that produced it |
+| [`docs/getting-started.md`](docs/getting-started.md) | how to set up to do something like this, for someone new to Lean, VS Code, GitHub or coding agents |
 | [`docs/design.md`](docs/design.md) | design record: status table, the measurements behind each decision, and the traps encountered |
 | [`docs/finite-range.md`](docs/finite-range.md) | the finite-range check on its own |
 | [`docs/proof-large-degree.md`](docs/proof-large-degree.md) | informal proof for degrees ≥ 101 |
