@@ -5,11 +5,8 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read # Read access to repository contents
-  pages: write # Write access to GitHub Pages
-  id-token: write # Write access to ID tokens
+  contents: read
 
 jobs:
   build:
@@ -17,5 +14,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: leanprover/lean-action@v1
-      - uses: leanprover-community/docgen-action@v1
+
+      # The repository's trust policy, enforced: no `sorry` outside the two
+      # deliberate holes in Challenge.lean, no project-defined axiom, no
+      # native_decide, no unsafe, no floating point, and the top-level results
+      # depending on the three standard axioms only.  See docs/design.md §8.
+      - name: Trust audit
+        run: bash scripts/audit.sh

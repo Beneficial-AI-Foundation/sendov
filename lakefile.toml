@@ -1,7 +1,7 @@
 name = "sendov"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Sendov"]
+defaultTargets = ["Sendov", "Challenge", "Solution"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
