@@ -134,8 +134,11 @@ forces `qⱼ = 1`, so every critical point is `0` and `p = c(zⁿ-1)`.
 > [`all_q_eq_one`](Sendov/Boundary.lean#L168) → [`rubinstein_one`](Sendov/Boundary.lean#L210)
 
 The boundary case is Rubinstein's theorem, and it is where the Phelps–Rodriguez equality case
-comes from. It is proved here from scratch, by the argument above rather than by transcribing
-his; whether that argument is new is unknown — see [Provenance](#provenance-and-novelty).
+comes from. The argument is **not new**: the identity and the half-plane bound above are
+equation (5.1) and Remark 5.1 of [Tang and Zhang](https://arxiv.org/abs/2508.10341), where the
+same two steps give the `a = 1` case of Sendov's conjecture. What is done here in addition is
+to run the sandwich to equality, recovering the classification — which is Rubinstein's 1968
+theorem, and so not new either. See [Provenance](#provenance-and-novelty).
 
 ### 3d. The centre, `a = 0`
 
@@ -228,6 +231,15 @@ what they state and in size:
 | statement | Sendov **and** Phelps–Rodriguez | Sendov |
 | Lean | 80 files, 15,152 lines | 1,160 files, 92,816 lines *(as reported there)* |
 | shared code | none | |
+
+The boundary argument in [`Sendov/Boundary.lean`](Sendov/Boundary.lean) is likewise not new.
+It was reached here from the blog post rather than from the literature, but its two ingredients
+are equation (5.1) and Remark 5.1 of Quanyu Tang and Teng Zhang, *Sharp Schoenberg type
+inequalities and the de Bruin–Sharma problem*, [arXiv:2508.10341](https://arxiv.org/abs/2508.10341):
+their `∑ₖ 1/wₖ = 2 ∑ⱼ 1/zⱼ` is `boundary_reciprocal` after moving the distinguished zero from
+`0` to `1`, and their `ℜ(1/zⱼ) ≤ -1/2` is `half_le_re_inv_one_sub`. Remark 5.1 stops at the
+non-strict conclusion `min|wₖ| ≤ 1`; the extra step here, extracting equality term by term to
+get the classification, recovers Rubinstein's 1968 theorem and is not claimed as new either.
 
 One difference is worth naming because it is checkable here: this development uses **no
 interval arithmetic and no floating point at all**. The single computational step — a numerical

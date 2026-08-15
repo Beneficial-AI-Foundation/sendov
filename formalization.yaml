@@ -79,9 +79,27 @@ sources:
       The boundary case |a| = 1, with the same equality classification. This
       development proves that case from scratch in Sendov/Boundary.lean, from
       p''(1)/p'(1), following the blog post rather than transcribing
-      Rubinstein's paper, on which it does not depend. Whether that argument is
-      new is unknown: no comparison with Rubinstein's proof was made and no
-      literature search was performed.
+      Rubinstein's paper, on which it does not depend. The argument used is not
+      new either: see the Tang-Zhang entry below.
+
+  - title: "Sharp Schoenberg type inequalities and the de Bruin-Sharma problem"
+    authors: ["Quanyu Tang", "Teng Zhang"]
+    type: "paper"
+    identifier: "arXiv:2508.10341"
+    relationship: background
+    note: >-
+      Equation (5.1) and Remark 5.1 of this preprint are the two ingredients of
+      the boundary case |a| = 1 in Sendov/Boundary.lean: their identity
+      sum_k 1/w_k = 2 sum_j 1/z_j is Sendov.boundary_reciprocal after moving
+      the distinguished zero from 0 to 1, and their Re(1/z_j) <= -1/2 is
+      Sendov.half_le_re_inv_one_sub. Remark 5.1 combines them to give the a = 1
+      case of Sendov's conjecture in the non-strict form min_k |w_k| <= 1. This
+      development reaches the same two ingredients from the blog post rather
+      than from this preprint, and goes one step further, extracting equality
+      term by term to obtain the classification p = c(z^n - a^n); that step
+      recovers Rubinstein's 1968 theorem and is likewise not claimed as new.
+      The correspondence was checked against the preprint after the
+      formalization was complete.
 
   - title: "On a conjecture of Ilieff"
     authors: ["D. A. Brannan"]
@@ -196,8 +214,10 @@ limitations:
     before this work, and the informal proof formalized here is a digestion of
     that proof; see related_formalizations. Where the documentation notes a
     difference from earlier work it is describing this development, not
-    claiming priority. In particular the novelty of the boundary argument in
-    Sendov/Boundary.lean is unknown.
+    claiming priority. In particular the boundary argument in
+    Sendov/Boundary.lean is not new: its two ingredients are equation (5.1) and
+    Remark 5.1 of the Tang-Zhang preprint listed above, and the equality case it
+    additionally extracts is Rubinstein's 1968 theorem.
   - >-
     The proof depends on a computational component. For degrees 5 to 100 a
     numerical inequality is discharged by Bernstein certificates generated

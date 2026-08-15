@@ -284,6 +284,14 @@ independence from the earlier Lean formalization was simply wrong, and was corre
 statement that no literature search was performed — see
 [Provenance and novelty](../README.md#provenance-and-novelty).*
 
+*A postscript, and a vindication of the reviewer's point. The boundary argument of §7 — the one
+the documentation had called "a new proof of Rubinstein's theorem" — turned out not to be new.
+Its two ingredients are equation (5.1) and Remark 5.1 of a 2025 preprint of Tang and Zhang,
+[arXiv:2508.10341](https://arxiv.org/abs/2508.10341), which combines them to give the `a = 1`
+case of Sendov's conjecture; the reciprocal identity and the half-plane bound are both there.
+It was reached here independently, from the blog post, but a literature search would have found
+it, which is exactly what the reviewer said. The documentation now says so.*
+
 ---
 
 ## What the process actually looked like
