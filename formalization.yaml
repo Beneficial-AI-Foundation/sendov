@@ -6,24 +6,28 @@ project:
   description: >-
     A Lean formalization of Sendov's conjecture, and of its Phelps-Rodriguez
     strengthening, in full generality: if every zero of a complex polynomial p
-    of degree n >= 2 lies in the closed unit disk, then every zero a of p has a
-    critical point of p within distance 1 of it, and within distance strictly
-    less than 1 unless |a| = 1 and p is a scalar multiple of z^n - a^n. The
-    proof is by contradiction. Degrees 2 to 5 fall to an elementary integral
-    computation; for n >= 5 two estimates on the same integral -- a polar
-    channel and an origin channel -- are shown to be incompatible, which
-    reduces the theorem to a single numerical inequality, discharged by exact
-    rational Bernstein certificates for degrees 5 to 100 and analytically for
-    degrees 101 and up. The boundary case |a| = 1 is proved separately from a
-    reciprocal identity, and it is there that the equality classification is
-    extracted. Nothing here is claimed to be new: the informal proof being
-    formalized is a digestion of Lech Mazur's proof, which had already been
-    formalized in Lean, so this is a second and independently checkable
-    machine-checked proof of Sendov's conjecture, whose additional content is
-    the Phelps-Rodriguez equality case. The Lean source was written by an AI
-    agent under the direction and review of the author. There is no sorry
-    outside the two deliberate holes in Challenge.lean, no project-defined
-    axiom, no native_decide, and no floating point in any statement or proof.
+    of degree n >= 2 lies in the closed unit disk, then every zero a of p has
+    a critical point of p within distance 1 of it, and within distance
+    strictly less than 1 unless |a| = 1 and p is a scalar multiple of z^n -
+    a^n. The proof is by contradiction. Degrees 2 to 4 fall to an elementary
+    integral computation; degree 5 upward goes through two estimates on the
+    same integral -- a polar channel and an origin channel -- which are shown
+    to be incompatible, reducing the theorem to a single numerical inequality.
+    That inequality is discharged by exact rational Bernstein certificates,
+    generated outside Lean and re-verified inside it, in both of its ranges:
+    per-degree certificates for 5 <= n <= 100, and, for n >= 101, a single
+    degree-58 certificate closing the one-variable inequality that the
+    analytic large-degree reduction leaves behind. The boundary case |a| = 1
+    is proved separately from a reciprocal identity, and it is there that the
+    equality classification is extracted. Nothing here is claimed to be new:
+    the informal proof being formalized is a digestion of Lech Mazur's proof,
+    which had already been formalized in Lean, so this is a second and
+    independently checkable machine-checked proof of Sendov's conjecture,
+    whose additional content is the Phelps-Rodriguez equality case. The Lean
+    source was written by an AI agent under the direction and review of the
+    author. There is no sorry outside the two deliberate holes in
+    Challenge.lean, no project-defined axiom, no native_decide, and no
+    floating point in any statement or proof.
   authors:
     - "Terence Tao"
   license: "Apache-2.0"
@@ -69,12 +73,18 @@ fidelity:
   divergences: >-
     Faithful to the source, and in two respects stronger than it. The blog post
     argues Sendov's conjecture for n >= 5; this development proves all n >= 2,
-    the low degrees included, in Sendov/Analytic/LowDegree.lean. The blog post
+    adding degrees 2 to 4 in Sendov/Analytic/LowDegree.lean. The blog post
     states the non-strict conclusion; this development additionally extracts
     the Phelps-Rodriguez equality classification, strengthening the distance
     bound to a strict inequality except for p = c(z^n - a^n) with |a| = 1.
     Both are generalizations rather than weakenings: no hypothesis of the
-    source was strengthened, and no part of its statement was dropped. Lemma
+    source was strengthened, and no part of its statement was dropped. One
+    step is proved by a different route than the informal account: for
+    n >= 101 the write-up in docs/proof-large-degree.md splits 0 <= alpha <= 17
+    at alpha = 16 and estimates the two pieces by exact rational endpoint
+    bounds, whereas Sendov/LargeDegree/Endgame.lean settles the whole interval
+    with one generated Bernstein certificate, Sendov.F_pos, which the sharp
+    Beta constant leaves enough margin for. The conclusion is the same. Lemma
     names differ from the informal text throughout; the roadmap in README.md
     records the correspondence.
 
@@ -120,10 +130,16 @@ sources:
     authors: ["D. Phelps", "R. S. Rodriguez"]
     type: "article"
     id: "https://zbmath.org/3386011"
-    relationship: background
+    relationship: formalizes
     note: >-
       The source of the strengthened conjecture with the equality
       classification, formalized here as SendovConjecture.phelps_rodriguez.
+      Two sources carry "formalizes", and they supply different things: the
+      blog post supplies the proof that this development follows, and this
+      paper supplies the statement of the stronger of the two theorems proved.
+      The submitted statement does not extend the conjecture recorded here --
+      it is proved exactly as stated -- which is why this is "formalizes"
+      rather than "adapts".
 
   - title: "On a problem of Ilyeff"
     authors: ["Z. Rubinstein"]
@@ -246,8 +262,11 @@ automation:
     - method: other
       framework: "Python scripts in scripts/"
       role: >-
-        The Bernstein certificates for degrees 5 to 100 in Sendov/FiniteRange/
-        are emitted by the Python scripts in scripts/ (about 1300 lines). Those
+        Every Bernstein certificate in the development is emitted by the Python
+        scripts in scripts/ (about 1300 lines): the per-degree certificates for
+        5 <= n <= 100 in Sendov/FiniteRange/, and the degree-58 endgame
+        certificate Sendov.F_pos in Sendov/LargeDegree/Endgame.lean, which
+        scripts/gen_endgame.py generates. Those
         scripts are outside the trusted base: they write Lean source that Lean
         re-verifies from scratch, so a bug in them causes a build failure, not
         an unsound theorem. scripts/mutation_test.sh checks that the
@@ -280,10 +299,16 @@ limitations:
     Remark 5.1 of the Tang-Zhang preprint listed above, and the equality case it
     additionally extracts is Rubinstein's 1968 theorem.
   - >-
-    The proof depends on a computational component. For degrees 5 to 100 a
-    numerical inequality is discharged by Bernstein certificates generated
-    outside Lean and re-verified inside it; degrees 101 and above are handled
-    analytically. This is about half the Lean source by line count. It uses no
+    The proof depends on a computational component, in both degree ranges.
+    Every degree from 5 upward reaches a numerical inequality that is
+    discharged by Bernstein certificates generated outside Lean and re-verified
+    inside it. For 5 <= n <= 100 these are the per-degree certificates in
+    Sendov/FiniteRange/. For n >= 101 an analytic argument first removes the
+    degree, reducing the claim to Ut(alpha) < 1 on [0,17] in a single variable;
+    that residual inequality is then closed by Sendov.F_pos in
+    Sendov/LargeDegree/Endgame.lean, a generated degree-58 Bernstein
+    certificate, so the large-degree branch is not purely analytic either.
+    This is about half the Lean source by line count. It uses no
     interval arithmetic and no floating point: the certificates are exact
     rationals, and scripts/audit.sh fails if Float appears in any statement or
     proof.
@@ -380,9 +405,9 @@ alignment:
       module: "Sendov.Analytic.LowDegree"
       status: subsumed
       note: >-
-        Degree three is not treated separately: it falls inside the branch
-        2 <= n <= 5, which contradicts the scalar bound 1 <= J_(n-1)(a)
-        directly. No comparison with Brannan's argument was made.
+        Degree three is not treated separately: it falls inside the elementary
+        branch, which contradicts the scalar bound 1 <= J_(n-1)(a) directly.
+        No comparison with Brannan's argument was made.
 
     - source: "Tao, A digestion of the proof of Sendov's conjecture: the polar channel"
       lean: "Sendov.one_le_integral_Ppolar"
@@ -411,11 +436,14 @@ alignment:
       module: "Sendov.Main"
       status: proved-by-computation
       note: >-
-        Split at the degree: Sendov.finite_range_le_100
-        (Sendov.FiniteRange.Cover) discharges 5 <= n <= 100 by exact rational
-        Bernstein certificates generated by the scripts in scripts/ and
-        re-verified by Lean, and Sendov.large_degree
-        (Sendov.LargeDegree.Endgame) handles n >= 101 analytically. See
+        Split at the degree, but generated exact rational Bernstein
+        certificates close both halves. Sendov.finite_range_le_100
+        (Sendov.FiniteRange.Cover) discharges 5 <= n <= 100 from the per-degree
+        certificates in Sendov/FiniteRange/. Sendov.large_degree
+        (Sendov.LargeDegree.Endgame) handles n >= 101 by an analytic argument
+        that removes the degree, leaving Ut(alpha) < 1 on [0,17] in one
+        variable; that is closed by Sendov.F_pos, a generated degree-58
+        certificate, so this half is not purely analytic. See
         docs/finite-range.md and docs/proof-large-degree.md.
 
     - source: "Tao, A digestion of the proof of Sendov's conjecture: the low degrees"
@@ -425,4 +453,7 @@ alignment:
       note: >-
         The blog post argues n >= 5; this row is the extension down to n >= 2,
         by an elementary integral computation done once at m = 4. No
-        certificates and no Real.rpow are used here.
+        certificates and no Real.rpow are used here. The lemma is stated for
+        2 <= n <= 5, but the recorded proof invokes it only for n <= 4:
+        Sendov.sendov_interior splits at n < 5, so degree 5 goes through
+        the two-channel branch and its certificates like every larger degree.

@@ -70,7 +70,7 @@ The polar identity together with `p'(a)` two ways gives
 This is where the argument forks. The Möbius estimate `|1-az|/|a-z| ≥ 1` is the one step that
 needs `a` real.
 
-### 3a. Low degrees, `2 ≤ n ≤ 5`
+### 3a. Low degrees, `2 ≤ n ≤ 4`
 
 Bounding each factor of `(⋆)` by the *scalar* `X(t) = a + (1-a²)t` already contradicts itself:
 `1 ≤ Jₘ(a) = ∫₀¹X(t)ᵐ dt` with `m = n-1`, while `Jₘ(a) < 1` for `0 < a < 1` and `m ≤ 4`. The
@@ -81,6 +81,11 @@ computation is done once, at `m = 4`, where `1 - J₄(a) = ((1-a)³(1+a)/5)(a⁴
 > [`lowJ_lt_one`](Sendov/Analytic/LowDegree.lean#L185)
 
 No origin channel, no `Real.rpow`, no certificates.
+
+The lemma is stated for `2 ≤ n ≤ 5`, but this is the only branch that needs no certificate,
+and the recorded proof enters it only for `n ≤ 4`: [`sendov_interior`](Sendov/Interior.lean#L53)
+splits at `n < 5`, so degree `5` goes through the two-channel branch below like every larger
+degree.
 
 ### 3b. High degrees, `n ≥ 5`: two channels that cannot both hold
 
@@ -114,9 +119,10 @@ by way of the chain `(1Q) ⟹ (lt)` ([`polar_exp`](Sendov/Reduction/Polar.lean#L
 [`alpha_le_seventeen`](Sendov/Reduction/Alpha17.lean#L106), and a numerical claim `stat`:
 
 > [`stat_lt_one`](Sendov/Main.lean#L40), from
-> [`finite_range_le_100`](Sendov/FiniteRange/Cover.lean#L58) (degrees 5–100, by Bernstein
-> certificates) and [`large_degree`](Sendov/LargeDegree/Endgame.lean#L251) (degrees ≥ 101,
-> analytically)
+> [`finite_range_le_100`](Sendov/FiniteRange/Cover.lean#L58) (degrees 5–100, by per-degree
+> Bernstein certificates) and [`large_degree`](Sendov/LargeDegree/Endgame.lean#L251)
+> (degrees ≥ 101, by an analytic reduction that removes the degree, then the single
+> Bernstein certificate [`F_pos`](Sendov/LargeDegree/Endgame.lean#L53) for what it leaves)
 
 See [`docs/finite-range.md`](docs/finite-range.md) for that component on its own.
 
@@ -242,10 +248,11 @@ non-strict conclusion `min|wₖ| ≤ 1`; the extra step here, extracting equalit
 get the classification, recovers Rubinstein's 1968 theorem and is not claimed as new either.
 
 One difference is worth naming because it is checkable here: this development uses **no
-interval arithmetic and no floating point at all**. The single computational step — a numerical
-inequality for degrees 5 to 100 — is discharged by exact rational Bernstein certificates
-re-verified inside Lean, and `scripts/audit.sh` fails the build if `Float` appears anywhere in
-a statement or proof. No comparison of the two proofs' internal arguments has been carried out.
+interval arithmetic and no floating point at all**. The computational step — a numerical
+inequality reached by every degree from `5` up, in both the finite range and, after the
+analytic reduction, the large-degree endgame — is discharged by exact rational Bernstein
+certificates re-verified inside Lean, and `scripts/audit.sh` fails the build if `Float`
+appears anywhere in a statement or proof. No comparison of the two proofs' internal arguments has been carried out.
 
 ## How this was produced
 
@@ -256,8 +263,9 @@ certificate machinery. The author set the targets, supplied the informal proof a
 plans in `docs/`, made the mathematical decisions, and reviewed the output as it was produced.
 No external or independent review has been performed.
 
-The Bernstein certificates in `Sendov/FiniteRange/` are emitted by the Python scripts in
-`scripts/`. Those scripts are outside the trusted base: they write Lean source that Lean
+The Bernstein certificates are emitted by the Python scripts in `scripts/`: the per-degree
+ones in `Sendov/FiniteRange/`, and the degree-58 endgame certificate `F_pos` in
+`Sendov/LargeDegree/Endgame.lean`, from `scripts/gen_endgame.py`. Those scripts are outside the trusted base: they write Lean source that Lean
 re-verifies from scratch, so a bug in them causes a build failure, not an unsound theorem.
 
 Two documents record the process rather than the result.
