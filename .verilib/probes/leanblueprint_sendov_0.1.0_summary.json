@@ -1,0 +1,194 @@
+{
+  "schema": "probe-leanblueprint/summary",
+  "schema-version": "3.0",
+  "tool": {
+    "name": "probe-leanblueprint",
+    "version": "0.8.0",
+    "command": "extract"
+  },
+  "source": {
+    "repo": "https://github.com/Zhang-Liao/sendov.git",
+    "commit": "ba12fe082cc0e7213bcbdbcddd84074f038f8d75",
+    "language": "lean",
+    "package": "sendov",
+    "package-version": "0.1.0"
+  },
+  "blueprint-provenance": {
+    "adapter": "verso",
+    "manifests": [
+      {
+        "path": "./docs/_out/site/html-multi/-verso-data/blueprint-manifest.json",
+        "sha256": "8884739b32cd1c69a87bc076736da9eb94c4ef2527c93e7e37ab592448ee5cef",
+        "vbp-internal-schema-version": 3
+      }
+    ]
+  },
+  "timestamp": "2026-08-25T03:38:16Z",
+  "data": {
+    "totals": {
+      "nodes": 77,
+      "with-lean-decl": 73,
+      "planned-only": 4,
+      "decl-missing": 0,
+      "decl-missing-upstream-proved": 0,
+      "partial-missing": 0,
+      "collisions": 2,
+      "mismatches": 0,
+      "node-atoms": 77
+    },
+    "all": {
+      "statement": {
+        "none": 0,
+        "blocked": 2,
+        "ready": 2,
+        "formalized": 73
+      },
+      "proof": {
+        "none": 2,
+        "ready": 2,
+        "proved": 20,
+        "fully-proved": 53
+      }
+    },
+    "definitions": {
+      "statement": {
+        "none": 0,
+        "blocked": 1,
+        "ready": 2,
+        "formalized": 11
+      },
+      "proof": {
+        "none": 1,
+        "ready": 2,
+        "proved": 0,
+        "fully-proved": 11
+      }
+    },
+    "theorems": {
+      "statement": {
+        "none": 0,
+        "blocked": 1,
+        "ready": 0,
+        "formalized": 62
+      },
+      "proof": {
+        "none": 1,
+        "ready": 0,
+        "proved": 20,
+        "fully-proved": 42
+      }
+    },
+    "headline": {
+      "theorems-total": 63,
+      "theorems-fully-proved": 42,
+      "theorems-fully-proved-probe-lean-confirmed": 42,
+      "theorems-fully-proved-upstream-proved": 0,
+      "fraction": 0.6666666666666666,
+      "fraction-probe-lean-confirmed": 0.6666666666666666
+    },
+    "by-chapter": {
+      "Low-degrees": {
+        "nodes": 8,
+        "statement": {
+          "none": 0,
+          "blocked": 0,
+          "ready": 0,
+          "formalized": 8
+        },
+        "proof": {
+          "none": 0,
+          "ready": 0,
+          "proved": 0,
+          "fully-proved": 8
+        },
+        "theorems-total": 7,
+        "theorems-fully-proved": 7
+      },
+      "Rubinstein___s-boundary-theorem": {
+        "nodes": 8,
+        "statement": {
+          "none": 0,
+          "blocked": 1,
+          "ready": 1,
+          "formalized": 6
+        },
+        "proof": {
+          "none": 1,
+          "ready": 1,
+          "proved": 4,
+          "fully-proved": 2
+        },
+        "theorems-total": 7,
+        "theorems-fully-proved": 2
+      },
+      "Sendov___s-conjecture-in-the-interior": {
+        "nodes": 27,
+        "statement": {
+          "none": 0,
+          "blocked": 0,
+          "ready": 0,
+          "formalized": 27
+        },
+        "proof": {
+          "none": 0,
+          "ready": 0,
+          "proved": 3,
+          "fully-proved": 24
+        },
+        "theorems-total": 24,
+        "theorems-fully-proved": 21
+      },
+      "The-conjecture": {
+        "nodes": 5,
+        "statement": {
+          "none": 0,
+          "blocked": 0,
+          "ready": 0,
+          "formalized": 5
+        },
+        "proof": {
+          "none": 0,
+          "ready": 0,
+          "proved": 4,
+          "fully-proved": 1
+        },
+        "theorems-total": 4,
+        "theorems-fully-proved": 0
+      },
+      "The-finite-Sendov-range": {
+        "nodes": 14,
+        "statement": {
+          "none": 0,
+          "blocked": 1,
+          "ready": 1,
+          "formalized": 12
+        },
+        "proof": {
+          "none": 1,
+          "ready": 1,
+          "proved": 9,
+          "fully-proved": 3
+        },
+        "theorems-total": 9,
+        "theorems-fully-proved": 0
+      },
+      "The-large-degree-range": {
+        "nodes": 15,
+        "statement": {
+          "none": 0,
+          "blocked": 0,
+          "ready": 0,
+          "formalized": 15
+        },
+        "proof": {
+          "none": 0,
+          "ready": 0,
+          "proved": 0,
+          "fully-proved": 15
+        },
+        "theorems-total": 12,
+        "theorems-fully-proved": 12
+      }
+    }
+  }
+}
