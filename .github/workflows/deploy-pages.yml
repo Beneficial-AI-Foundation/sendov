@@ -54,6 +54,23 @@ jobs:
         working-directory: docs
         run: lake env lean --run SendovBlueprintMain.lean --output ../site
 
+      - name: Create landing page redirect
+        run: |
+          cat > site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta http-equiv="refresh" content="0; url=html-multi/">
+            <link rel="canonical" href="html-multi/">
+            <title>Sendov Blueprint</title>
+          </head>
+          <body>
+            <p>Redirecting to <a href="html-multi/">Sendov Blueprint documentation</a>...</p>
+          </body>
+          </html>
+          EOF
+
       - name: Upload docs artifact
         uses: actions/upload-artifact@v4
         with:
