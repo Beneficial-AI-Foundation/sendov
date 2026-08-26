@@ -1,0 +1,94 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    name: Build Verso Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Cache Lake packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            .lake
+            docs/.lake
+          key: ${{ runner.os }}-lake-docs-${{ hashFiles('lake-manifest.json', 'lean-toolchain', 'docs/lake-manifest.json', 'docs/lean-toolchain') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-lake-docs-${{ hashFiles('lake-manifest.json', 'lean-toolchain', 'docs/lake-manifest.json', 'docs/lean-toolchain') }}-
+            ${{ runner.os }}-lake-docs-
+
+      - name: Download Mathlib cache (docs)
+        continue-on-error: true
+        run: lake -d docs exe cache get
+
+      - name: Download Mathlib cache (root)
+        continue-on-error: true
+        run: lake exe cache get
+
+      - name: Build Verso docs library
+        run: lake -d docs build SendovBlueprint
+
+      - name: Generate documentation site
+        working-directory: docs
+        run: lake env lean --run SendovBlueprintMain.lean --output ../site
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: site
+          retention-days: 1
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build-docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Download docs site
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-site
+          path: site
+
+      - name: List final site structure
+        run: |
+          echo "=== Site structure ==="
+          find site -type f | head -50
+          echo "..."
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
