@@ -58,7 +58,7 @@ $`|\omega^{-1}\zeta - r| = |\zeta - a|`. In Lean: `Sendov.rotate`
 *The Phelps–Rodriguez conjecture.* For degree $`n \ge 2`, all zeroes in the
 closed unit disk, and any zero $`a`: either $`p'` has a zero $`\zeta` with
 $`|\zeta - a| < 1`, or $`|a| = 1` and $`p = c(X^n - a^n)` for some
-$`c \ne 0`. In Lean: `Sendov.phelps_rodriguez`. Blog: Conjecture 2. Uses {uses "main_rotate"}[],
+$`c \ne 0`. In Lean: `Sendov.phelps_rodriguez`. Blog: [Conjecture 2](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#:~:text=Conjecture%202%20(Phelps). Uses {uses "main_rotate"}[],
 {uses "in_sendov_interior_real"}[], and {uses "bd_rubinstein_one"}[].
 :::
 
@@ -74,7 +74,7 @@ $`c\,\omega^{-n}(z^n - a^n)`.
 *Sendov's conjecture.* For degree $`n \ge 2`, all zeroes in the closed unit
 disk, and any zero $`a`: $`p'` has a zero $`\zeta` with $`|\zeta - a| \le 1`.
 In the extremal branch the critical point $`\zeta = 0` is at distance exactly
-one. In Lean: `Sendov.sendov`. Blog: Conjecture 1. Uses {uses "main_phelps_rodriguez"}[].
+one. In Lean: `Sendov.sendov`. Blog: [Conjecture 1](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#:~:text=Conjecture%201%20(Sendov). Uses {uses "main_phelps_rodriguez"}[].
 :::
 
 # Interface

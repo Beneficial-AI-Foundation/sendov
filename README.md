@@ -197,6 +197,26 @@ bash scripts/audit.sh
 Memory, not time, is the binding constraint on a full build; `scripts/staged_build.sh` builds
 the certificate files in batches.
 
+### Blueprint
+
+The Verso blueprint lives in `docs/` and is built from the repository root:
+
+```
+lake -d docs exe cache get
+lake -d docs build SendovBlueprint
+(cd docs && lake env lean --run SendovBlueprintMain.lean --output ../site)
+python3 docs/scripts/inject_lean_source.py site
+python3 -m http.server -d site 8000
+```
+
+Run the first two commands from the repository root, not from inside `docs/`.
+The blueprint records each Lean declaration's source location when the chapter
+modules are elaborated, using the current directory as the workspace root; a
+chapter built with `cd docs && lake build` cannot locate `Sendov/*.lean` and
+loses the "Show Lean source" boxes for every declaration it references. If that
+happens, delete `docs/.lake/build/lib/lean/SendovBlueprint` and rebuild from the
+root.
+
 ## Documents
 
 | | |
