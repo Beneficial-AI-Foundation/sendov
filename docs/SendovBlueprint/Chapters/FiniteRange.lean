@@ -9,8 +9,13 @@ open Informal
 
 #doc (Manual) "The finite Sendov range" =>
 
-This chapter is the Blueprint rendering of `docs/plan-finite-range.md`: the
-finite-dimensional numerical implication left open in the blog post. Where the
+This chapter and the next refute the real inequality `stat` that the interior
+argument ({bpref "in_stat"}[]) extracts from a counterexample; together they
+give {bpref "main_stat_lt_one"}[]. This chapter defines the right-hand side
+$`R_n(\alpha)` of `stat` and certifies $`R_n(\alpha) < 1` for
+$`5 \le n \le 100`; the next handles $`n \ge 101` analytically. It is the
+Blueprint rendering of `docs/plan-finite-range.md`: the finite-dimensional
+numerical implication left open in the blog post. Where the
 implementation deviates from the original plan, the deviation is noted on the
 node. The corresponding Lean code lives under `Sendov/FiniteRange/` with the
 basic definitions in `Sendov/Defs.lean`.

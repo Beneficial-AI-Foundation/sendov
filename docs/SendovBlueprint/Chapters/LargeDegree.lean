@@ -9,9 +9,10 @@ open Informal
 
 #doc (Manual) "The large-degree range" =>
 
-This chapter is the Blueprint rendering of `docs/proof-large-degree.md`
-(Sections 1–8): equation `stat` of the blog post is impossible for $`n \ge 101`
-and $`0 \le \alpha \le 17`. The Lean code lives under `Sendov/LargeDegree/`,
+This chapter completes the refutation of `stat` begun in the previous one:
+with $`R_n(\alpha)` as in {bpref "fr_rhs"}[], equation `stat` of the blog post
+is impossible for $`n \ge 101` and $`0 \le \alpha \le 17`. It is the
+Blueprint rendering of `docs/proof-large-degree.md` (Sections 1–8). The Lean code lives under `Sendov/LargeDegree/`,
 resting on the shared `Sendov/Common/` layer. The write-up's Sections 9–10 (a
 hybrid strategy for lowering the finite cutoff) were never part of the proved
 argument and have no node here.

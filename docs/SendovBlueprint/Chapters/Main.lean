@@ -10,8 +10,10 @@ open Informal
 #doc (Manual) "The conjecture" =>
 
 The top of the development: the numerical claim for every degree
-(`Sendov/Main.lean`), and Sendov's conjecture together with the
-Phelps–Rodriguez conjecture for an arbitrary zero (`Sendov/Conjecture.lean`).
+(`Sendov/Main.lean`), which glues the two numerical chapters together, and
+Sendov's conjecture together with the Phelps–Rodriguez conjecture for an
+arbitrary zero (`Sendov/Conjecture.lean`), which glues the interior and
+boundary chapters together.
 Nothing mathematical happens in the second file; it removes the normalization
 $`a \in [0,1)` by rotating the variable.
 

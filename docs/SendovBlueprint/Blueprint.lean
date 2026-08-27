@@ -20,11 +20,19 @@ open Informal
 Blueprint for the Sendov conjecture formalization, following the blog post
 [*A digestion of the proof of Sendov's conjecture*](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/)
 (Terence Tao, 12 August 2026). Lemma, proposition, and equation numbers quoted
-on the nodes ("Blog: Lemma 6(ii), eq. (8)") refer to that post. The chapter
-[*The digested proof*](The-digested-proof/) retells the argument in the
-post's order; the remaining chapters are organised by Lean module and migrated
-from the plan and proof documents in `docs/`, with deviations between plan and
-implementation noted on the nodes.
+on the nodes ("Blog: Lemma 6(ii), eq. (8)") refer to that post.
+
+*How to read.* The first chapter, [*The digested proof*](The-digested-proof/),
+retells the argument in the post's order and is the place to start; nothing in
+it is proved, but every idea links to the node that formalizes it. The
+remaining chapters are organised by Lean module, in the order the proof
+consumes them: the top-level statements and the rotation to a real zero; the
+interior case $`0 < a < 1`, which reduces everything to the real inequality
+`stat` in $`n` and $`\alpha`; the two numerical chapters that refute `stat`
+(certified for $`5 \le n \le 100`, analytic for $`n \ge 101`); the
+low-degree branch $`n \le 5`; and the boundary case $`|a| = 1`. These
+chapters are migrated from the plan and proof documents in `docs/`, with
+deviations between plan and implementation noted on the nodes.
 
 *History.* Sendov posed the conjecture around 1958 (it first appeared in print in
 Hayman's 1967 problem collection). Rubinstein (1968) proved it for zeroes on
@@ -59,19 +67,19 @@ Phelps–Rodriguez equality case $`p = c(X^n - a^n)` comes from. Both theorems
 are restated in `Solution.lean` matching `Challenge.lean`, and depend only on
 the axioms `propext`, `Classical.choice`, and `Quot.sound`.
 
-{include 0 SendovBlueprint.Chapters.Main}
-
 {include 0 SendovBlueprint.Chapters.Overview}
 
+{include 0 SendovBlueprint.Chapters.Main}
+
 {include 0 SendovBlueprint.Chapters.Interior}
-
-{include 0 SendovBlueprint.Chapters.LowDegree}
-
-{include 0 SendovBlueprint.Chapters.Boundary}
 
 {include 0 SendovBlueprint.Chapters.FiniteRange}
 
 {include 0 SendovBlueprint.Chapters.LargeDegree}
+
+{include 0 SendovBlueprint.Chapters.LowDegree}
+
+{include 0 SendovBlueprint.Chapters.Boundary}
 
 {blueprint_graph}
 {blueprint_summary}

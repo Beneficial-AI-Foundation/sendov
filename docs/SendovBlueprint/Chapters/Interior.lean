@@ -20,6 +20,13 @@ two cannot hold together. The Lean code lives under `Sendov/Counterexample/`,
 Roots and critical points are multisets throughout, so repeated roots need no
 special treatment.
 
+The chapter ends by reducing a counterexample to the real inequality `stat`,
+$`1 \le R_n(\alpha)`, in the degree $`n` and the single parameter
+$`\alpha = \frac{n-1}{2}(1 - a^2)`. The function $`R_n` is defined in
+{bpref "fr_rhs"}[] at the start of the next chapter, and the two chapters that
+follow this one show $`R_n(\alpha) < 1` on the whole range, which is the
+contradiction.
+
 :::group "interior"
 If p has degree at least 2, all zeroes in the closed unit disk, and a real zero
 a with 0 <= a < 1, then p' has a zero zeta with dist(zeta, a) < 1.
