@@ -19,29 +19,47 @@ Nothing here is proved: it is a reading guide.
 
 # What is being proved
 
-Let $`n \ge 2` and let $`p` be a degree-$`n` polynomial with all zeroes in the
-closed unit disk. Sendov's conjecture (blog Conjecture 1,
-{bpref "main_sendov"}[]) says that every zero $`a` has a critical point
-$`\zeta` with $`|\zeta - a| \le 1`. The Phelps–Rodriguez conjecture (blog
-Conjecture 2, {bpref "main_phelps_rodriguez"}[]) sharpens this to
-$`|\zeta - a| < 1` unless $`|a| = 1` and $`p` is a scalar multiple of
-$`z^n - a^n`.
+The main theorem of this formalization is the *Phelps–Rodriguez conjecture*
+(blog Conjecture 2), the strong form of Sendov's conjecture with its equality
+case classified:
 
-Rotating the variable ({bpref "main_rotate"}[]) normalises $`a` to a real
-number in $`[0, 1]`. Rubinstein's theorem settles $`a = 1`
-({bpref "bd_rubinstein_one"}[], blog Theorem 14), so both conjectures follow
-from
+*Theorem (Phelps–Rodriguez).* Let $`n \ge 2` and let $`p` be a degree-$`n`
+polynomial with all zeroes in the closed unit disk. Then for every zero $`a` of
+$`p` there is a critical point $`\zeta` of $`p` with
+$$`|\zeta - a| < 1,`
+*unless* $`|a| = 1` and $`p` is a scalar multiple of $`z^n - a^n`.
 
-*Conjecture 3 (Sendov's conjecture in the interior).* If $`0 \le a < 1` is a
-zero of $`p`, then $`p'` has a zero $`\zeta` with $`|\zeta - a| < 1`.
+This is {bpref "main_phelps_rodriguez"}[] (`Sendov.phelps_rodriguez`). It was
+conjectured by Phelps and Rodriguez in 1972 and is stated in the blog post as
+Conjecture 2; the post observes that the digested argument proves it "in full
+generality", and this blueprint follows that observation through to a
+machine-checked proof. The classical *Sendov conjecture* (blog Conjecture 1),
+which only asks for $`|\zeta - a| \le 1`, is then an immediate corollary: in
+the exceptional case $`p = c(z^n - a^n)` the critical point $`\zeta = 0` is at
+distance exactly $`|a| = 1`. That corollary is {bpref "main_sendov"}[].
 
-This is {bpref "in_sendov_interior_real"}[]. Before 2026 it was known for
-$`n \le 8` (Brown–Xiang) and for $`n` sufficiently large (Tao, 2020), with
-no effective threshold. The proof below is uniform in $`n \ge 2` and, in the
-words of the blog post, "remarkably elementary": the only complex analysis is
-the fundamental theorem of algebra plus the fact that a disk Möbius map
-preserves the disk, and the deepest input is the top case of Maclaurin's
-inequality.
+The strict inequality is what makes Phelps–Rodriguez harder than Sendov, and
+it is obtained by extending the strategy for Sendov's conjecture rather than by
+a separate argument:
+
+* rotating the variable ({bpref "main_rotate"}[]) normalises the zero $`a` to a
+  real number in $`[0, 1]`;
+* for $`0 \le a < 1` — the interior — the two-channel argument below gives the
+  *strict* bound $`|\zeta - a| < 1` directly, with no exceptional case. This is
+  blog Conjecture 3 ("Sendov's conjecture in the interior"),
+  {bpref "in_sendov_interior_real"}[];
+* for $`a = 1` — the boundary — Rubinstein's theorem
+  ({bpref "bd_rubinstein_one"}[], blog Theorem 14) gives the strict bound
+  *or* identifies $`p = c(z^n - 1)`. Rotating back turns $`z^n - 1` into
+  $`z^n - a^n`. This boundary case is the only source of the exceptional
+  polynomials in Phelps–Rodriguez.
+
+Before 2026 the interior statement was known for $`n \le 8` (Brown–Xiang) and
+for $`n` sufficiently large (Tao, 2020), with no effective threshold. The
+proof below is uniform in $`n \ge 2` and, in the words of the blog post,
+"remarkably elementary": the only complex analysis is the fundamental theorem
+of algebra plus the fact that a disk Möbius map preserves the disk, and the
+deepest input is the top case of Maclaurin's inequality.
 
 # The setup: two families of points that barely talk to each other
 
