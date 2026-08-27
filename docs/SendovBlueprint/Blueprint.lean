@@ -4,6 +4,7 @@ import VersoBlueprint
 import VersoBlueprint.Commands.Graph
 import VersoBlueprint.Commands.Summary
 import SendovBlueprint.Chapters.Main
+import SendovBlueprint.Chapters.Overview
 import SendovBlueprint.Chapters.Interior
 import SendovBlueprint.Chapters.LowDegree
 import SendovBlueprint.Chapters.Boundary
@@ -17,9 +18,25 @@ open Informal
 #doc (Manual) "Sendov Blueprint" =>
 
 Blueprint for the Sendov conjecture formalization, following the blog post
-[*A digestion of the proof of Sendov's conjecture*](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/).
-Chapters are migrated from the plan and proof documents in `docs/`, with
-deviations between plan and implementation noted on the nodes.
+[*A digestion of the proof of Sendov's conjecture*](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/)
+(Terence Tao, 12 August 2026). Lemma, proposition, and equation numbers quoted
+on the nodes ("Blog: Lemma 6(ii), eq. (8)") refer to that post. The chapter
+[*The digested proof*](The-digested-proof/) retells the argument in the
+post's order; the remaining chapters are organised by Lean module and migrated
+from the plan and proof documents in `docs/`, with deviations between plan and
+implementation noted on the nodes.
+
+*History.* Sendov posed the conjecture around 1958 (it first appeared in print in
+Hayman's 1967 problem collection). Rubinstein (1968) proved it for zeroes on
+the unit circle, with the equality case that Phelps and Rodriguez (1972)
+conjectured to be the only obstruction to a strict inequality. A sequence of
+papers culminating in Brown–Xiang (1999) settled degrees $`n \le 8`, and Tao
+(2020) settled all sufficiently large $`n` without an effective threshold. In
+August 2026 Lech Mazur used an AI system to produce a proof for all $`n`,
+verified in Lean; within days Tao digested it into the elementary argument
+followed here, observed that it proves the Phelps–Rodriguez form as well, and
+formalized that version in about 15,000 lines. The present blueprint documents
+an independent formalization of the digested proof.
 
 *Main results.* The principal contribution of this formalization is a complete proof of the
 *Phelps–Rodriguez conjecture*, the strong form of Sendov's conjecture with
@@ -43,6 +60,8 @@ are restated in `Solution.lean` matching `Challenge.lean`, and depend only on
 the axioms `propext`, `Classical.choice`, and `Quot.sound`.
 
 {include 0 SendovBlueprint.Chapters.Main}
+
+{include 0 SendovBlueprint.Chapters.Overview}
 
 {include 0 SendovBlueprint.Chapters.Interior}
 

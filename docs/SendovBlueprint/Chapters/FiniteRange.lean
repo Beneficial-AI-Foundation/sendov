@@ -38,7 +38,7 @@ The right-hand side of equation `stat` is
 $$`R_n(\alpha) = \frac16 + \frac1{4(3+\alpha)} + \frac1{2M} + \frac1{4M(3+\alpha)} + \frac{A^2 n M (n-2)}{4(3+\alpha)} \int_0^1 t^3 Q(t)^{(n-4)/2}\,dt.`
 
 Here $`A = a^2`, so the factor $`A^2` is the blog post's $`a^4`. In Lean this
-is `Sendov.R`. Uses {uses "fr_setup"}[].
+is `Sendov.R`. Blog: [eq. (22)](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#stat). Uses {uses "fr_setup"}[].
 :::
 
 :::definition "fr_domain" (parent := "finite_range")

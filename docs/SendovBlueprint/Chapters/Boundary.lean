@@ -54,7 +54,7 @@ $$`\sum_j q_j = 2\sum_j \frac1{1 - z_j}.`
 In Lean: `Sendov.boundary_reciprocal`, stated division-free in terms of
 $`\sum_j\prod_{k\ne j}` (`Sendov.sumEraseProd`) with the products
 $`\prod_j(1 - z_j)` and $`\prod_j(1 - w_j)` as inputs, so no junk value of
-$`0^{-1}` is ever evaluated. Uses {uses "bd_setup"}[] and
+$`0^{-1}` is ever evaluated. Blog: [Lemma 15 (Meir–Sharma identity) at $`a = 1`](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#meir). Uses {uses "bd_setup"}[] and
 {uses "bd_repeated_root"}[].
 :::
 
@@ -104,7 +104,7 @@ and then $`q_j = 1` term by term.
 *The strict-or-extremal alternative at $`a = 1`.* If $`p` has degree
 $`n \ge 2`, all zeroes in the closed unit disk, and $`p(1) = 0`, then either
 $`p'` has a zero $`\zeta` with $`|\zeta - 1| < 1`, or
-$`p = \operatorname{lc}(p)\,(X^n - 1)`. In Lean: `Sendov.rubinstein_one`. Uses
+$`p = \operatorname{lc}(p)\,(X^n - 1)`. In Lean: `Sendov.rubinstein_one`. Blog: [Theorem 14 (Rubinstein's theorem), Section 3](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#meir). Uses
 {uses "bd_repeated_root"}[] and {uses "bd_all_q_eq_one"}[].
 :::
 

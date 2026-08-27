@@ -29,7 +29,7 @@ a lies on the unit circle and p is a scalar multiple of z^n - a^n
 For every $`n \ge 5`, $`0 \le \alpha \le 17`, and $`c^2 \le A`:
 $`R_n(\alpha) < 1`. The finite range $`5 \le n \le 100` is certified by
 explicit polynomial arithmetic and $`n \ge 101` analytically; the seam is at
-$`100/101`. In Lean: `Sendov.stat_lt_one`. Uses {uses "fr_cover"}[] and
+$`100/101`. In Lean: `Sendov.stat_lt_one`. Blog: [infeasibility of eq. (22) for $`n > 200` and $`5 \le n \le 200`](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#stat). Uses {uses "fr_cover"}[] and
 {uses "lg_main"}[].
 :::
 
@@ -47,7 +47,7 @@ preserves the degree, keeps all zeroes in the closed unit disk
 (`Sendov.roots_rotate`), sends the zero $`a = \omega r` to the real point $`r`,
 and its critical points are the $`\omega^{-1}\zeta` with
 $`|\omega^{-1}\zeta - r| = |\zeta - a|`. In Lean: `Sendov.rotate`
-(`Sendov/Conjecture.lean`).
+(`Sendov/Conjecture.lean`). Blog: the normalisation $`0 \le a \le 1` after Conjecture 2.
 :::
 
 # The two conjectures
@@ -56,7 +56,7 @@ $`|\omega^{-1}\zeta - r| = |\zeta - a|`. In Lean: `Sendov.rotate`
 *The Phelps–Rodriguez conjecture.* For degree $`n \ge 2`, all zeroes in the
 closed unit disk, and any zero $`a`: either $`p'` has a zero $`\zeta` with
 $`|\zeta - a| < 1`, or $`|a| = 1` and $`p = c(X^n - a^n)` for some
-$`c \ne 0`. In Lean: `Sendov.phelps_rodriguez`. Uses {uses "main_rotate"}[],
+$`c \ne 0`. In Lean: `Sendov.phelps_rodriguez`. Blog: Conjecture 2. Uses {uses "main_rotate"}[],
 {uses "in_sendov_interior_real"}[], and {uses "bd_rubinstein_one"}[].
 :::
 
@@ -72,7 +72,7 @@ $`c\,\omega^{-n}(z^n - a^n)`.
 *Sendov's conjecture.* For degree $`n \ge 2`, all zeroes in the closed unit
 disk, and any zero $`a`: $`p'` has a zero $`\zeta` with $`|\zeta - a| \le 1`.
 In the extremal branch the critical point $`\zeta = 0` is at distance exactly
-one. In Lean: `Sendov.sendov`. Uses {uses "main_phelps_rodriguez"}[].
+one. In Lean: `Sendov.sendov`. Blog: Conjecture 1. Uses {uses "main_phelps_rodriguez"}[].
 :::
 
 # Interface

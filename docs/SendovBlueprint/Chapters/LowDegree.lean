@@ -98,7 +98,7 @@ $`J_4(a) < 1`, this is strictly below one.
 :::theorem "ld_main" (parent := "low_degree") (lean := "Sendov.low_degree_contradiction")
 *The low-degree claim.* For $`2 \le n \le 5`, $`0 < a < 1`, and points
 $`q_1, \dots, q_{n-1}` of the closed unit disk, the branch point $`(\star)`
-is impossible. In Lean: `Sendov.low_degree_contradiction`. Uses
+is impossible. In Lean: `Sendov.low_degree_contradiction`. Blog: Section 4, the $`n \le 4` cases, and Remark 16. Uses
 {uses "ld_one_le_J"}[] and {uses "ld_J_lt_one"}[].
 :::
 

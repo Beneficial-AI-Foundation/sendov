@@ -177,7 +177,7 @@ by hand, term by term, to keep every `ring` call at degree at most 62.
 
 :::theorem "lg_main" (parent := "large_degree") (lean := "Sendov.large_degree")
 *The large-degree claim.* For $`n \ge 101`, $`0 \le \alpha \le 17`, and
-$`c^2 \le A`: $`R_n(\alpha) < 1`. In Lean: `Sendov.large_degree`. Uses
+$`c^2 \le A`: $`R_n(\alpha) < 1`. In Lean: `Sendov.large_degree`. Blog: [the elimination of $`n > 200`, Section 0](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#stat). Uses
 {uses "lg_R_le_U"}[], {uses "lg_U_le_Ut"}[], {uses "lg_Ut_lt_one"}[], and
 {uses "lg_prelim"}[].
 :::
