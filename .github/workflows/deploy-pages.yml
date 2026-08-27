@@ -54,6 +54,9 @@ jobs:
         working-directory: docs
         run: lake env lean --run SendovBlueprintMain.lean --output ../site
 
+      - name: Inject full Lean source (statement + proof) into declaration boxes
+        run: python3 docs/scripts/inject_lean_source.py site
+
       - name: Create landing page redirect
         run: |
           cat > site/index.html << 'EOF'

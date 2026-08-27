@@ -21,6 +21,27 @@ Blueprint for the Sendov conjecture formalization, following the blog post
 Chapters are migrated from the plan and proof documents in `docs/`, with
 deviations between plan and implementation noted on the nodes.
 
+*Main results.* The principal contribution of this formalization is a complete proof of the
+*Phelps–Rodriguez conjecture*, the strong form of Sendov's conjecture with
+its equality case classified. Sendov's conjecture follows as a corollary.
+
+* {bpref "main_phelps_rodriguez"}[*The Phelps–Rodriguez conjecture*]
+  (`Sendov.phelps_rodriguez`): for $`n \ge 2` and $`p` of degree $`n` with all
+  zeroes in the closed unit disk, every zero $`a` has a critical point $`\zeta`
+  with $`|\zeta - a| < 1`, unless $`|a| = 1` and $`p = c(X^n - a^n)`.
+* {bpref "main_sendov"}[*Sendov's conjecture*] (`Sendov.sendov`): the weak
+  form $`|\zeta - a| \le 1`, derived directly from Phelps–Rodriguez.
+
+The proof extends the strategy for Sendov's conjecture: the interior case
+$`0 < |a| < 1` is the numerical argument
+({bpref "main_stat_lt_one"}[the numerical claim for every degree], certified
+degree by degree for $`5 \le n \le 100` and analytically for $`n \ge 101`),
+low degrees are handled separately, and the boundary case $`|a| = 1` is
+{bpref "bd_rubinstein_one"}[Rubinstein's theorem], which is where the
+Phelps–Rodriguez equality case $`p = c(X^n - a^n)` comes from. Both theorems
+are restated in `Solution.lean` matching `Challenge.lean`, and depend only on
+the axioms `propext`, `Classical.choice`, and `Quot.sound`.
+
 {include 0 SendovBlueprint.Chapters.Main}
 
 {include 0 SendovBlueprint.Chapters.Interior}
