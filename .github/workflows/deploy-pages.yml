@@ -47,6 +47,15 @@ jobs:
         continue-on-error: true
         run: lake exe cache get
 
+      - name: Check figure hotspots are up to date
+        # Regenerates the clickable overlays for the blog diagrams from the PNGs and the
+        # blog's formulas (with pixel-calibration asserts), then requires the committed
+        # Data.lean to match, so a changed PNG or formula cannot ship stale hotspots.
+        run: |
+          python3 -m pip install --quiet numpy pillow
+          python3 docs/scripts/gen_figure_hotspots.py
+          git diff --exit-code -- docs/SendovBlueprint/Figures/Data.lean
+
       - name: Build Verso docs library
         run: lake -d docs build SendovBlueprint
 

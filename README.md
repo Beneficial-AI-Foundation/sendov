@@ -209,6 +209,13 @@ python3 docs/scripts/inject_lean_source.py site
 python3 -m http.server -d site 8000
 ```
 
+The two diagrams from Section 2.2 of the blog post (`docs/SendovBlueprint/figures/`) are shown
+unchanged, with clickable curves linking to the nodes that prove them. The hotspot geometry is
+generated data: `docs/scripts/gen_figure_hotspots.py` (needs `numpy`, `pillow`) calibrates the
+axes against the PNGs, checks that the predicted curves hit the drawn pixels, and writes
+`docs/SendovBlueprint/Figures/Data.lean`, which is committed, so the blueprint build itself does
+not need Python.
+
 Run the first two commands from the repository root, not from inside `docs/`.
 The blueprint records each Lean declaration's source location when the chapter
 modules are elaborated, using the current directory as the workspace root; a

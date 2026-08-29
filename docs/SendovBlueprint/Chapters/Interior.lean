@@ -2,10 +2,12 @@ import Verso
 import VersoManual
 import VersoBlueprint
 import Sendov
+import SendovBlueprint.Figures
 
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open SendovBlueprint.Figures
 
 #doc (Manual) "Sendov's conjecture in the interior" =>
 
@@ -265,6 +267,16 @@ gives $`1 \le R_n(\alpha)`; the same bound yields feasibility $`c^2 \le A`
 (`Sendov.feasible_of_beta`). In Lean: `Sendov.stat_of_one_le`
 (`Sendov/Reduction/Stat.lean`). Blog: [eq. (22), `stat`](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#stat). Uses {uses "in_one_le"}[],
 {uses "in_beta_bound"}[], and {uses "fr_rhs"}[].
+:::
+
+The two channels, seen together (second diagram of the blog post's
+[Section 2.2](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#1le)):
+
+:::clickable_figure "channels"
+Polar feasible region (blue, {bpref "in_polar_exp"}[], bounded by
+{bpref "in_beta_bound"}[]) against the origin feasible region (red,
+{bpref "in_one_le"}[]); the gap between them is what the next theorem
+certifies for every $`n \ge 5`.
 :::
 
 :::theorem "in_incompatible" (parent := "interior") (lean := "Sendov.polar_origin_incompatible")

@@ -2,10 +2,12 @@ import Verso
 import VersoManual
 import VersoBlueprint
 import Sendov
+import SendovBlueprint.Figures
 
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open SendovBlueprint.Figures
 
 #doc (Manual) "The digested proof" =>
 
@@ -118,6 +120,22 @@ $$`\beta(t) := 1 - 2atx + a^2t^2, \qquad \beta(1) = (1-a)^2 + 2a(1-x),`
 near-counterexample $`x = 1` and $`\beta(1) = 0`. The proof produces two
 incompatible constraints between $`\alpha` and $`\beta(1)`.
 
+The whole argument fits in one picture, the second diagram of the blog post's
+[Section 2.2](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#1le).
+Every curve, region and legend entry is a link to the node that proves it.
+
+:::clickable_figure "channels"
+*Blue:* the polar channel, where the exponential inequality (17) can hold
+({bpref "in_polar_exp"}[]); its simplified form (18) puts $`\beta(1)` below
+$`\alpha/(3+\alpha)` ({bpref "in_beta_bound"}[]). *Red:* the origin channel with its
+error terms dropped ({bpref "in_one_le"}[]) needs $`\beta(1)` above the red
+curve. The two regions never meet. The rest of the proof is bookkeeping for the
+error terms: an a priori bound $`\alpha \le 17` ({bpref "in_alpha17"}[]), and
+the degree-by-degree check that the gap survives them
+({bpref "main_stat_lt_one"}[]). Diagram from the blog post (there described as
+Gemini-generated).
+:::
+
 # The polar channel: an upper bound on beta(1)
 
 Blog Proposition 10. The Möbius map $`z \mapsto (a - z)/(1 - az)` preserves the
@@ -139,6 +157,16 @@ and the elementary estimate $`\log(\sinh h / h) \le \sqrt{h^2 + 9} - 3`
 $$`0 < \beta(1) < \min\Bigl(\frac{\alpha}{3 + \alpha},\; 1 - \frac{\log\alpha}{\alpha}\Bigr),`
 which is {bpref "in_beta_bound"}[]. In words: if $`a` is within $`O(1/n)` of
 $`1` then the mean of the $`q_j` is forced very close to $`1` as well.
+
+The blog post's first diagram shows how little the simplification from (17) to
+(18) costs:
+
+:::clickable_figure "polar"
+The shaded region is where (17) can hold ({bpref "in_polar_exp"}[]); the two
+curves are the halves of (18), $`\beta(1) \le \alpha/(3+\alpha)` and
+$`\beta(1) \le 1 - \log\alpha/\alpha` ({bpref "in_beta_bound"}[]).
+Diagram from the blog post, [Section 2.2](https://terrytao.wordpress.com/2026/08/12/a-digestion-of-the-proof-of-sendovs-conjecture/#beta-bound).
+:::
 
 # The origin channel: a lower bound on beta(1)
 
